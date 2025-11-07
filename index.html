@@ -8,7 +8,7 @@
 <style>
   :root{
     --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --muted:#6b7280;
-    --blue:#2563eb; --pill:#f9fafb;
+    --blue:#2563eb; --pill:#f9fafb; --green:#16a34a;
   }
   *{ box-sizing:border-box; font-family:system-ui,Segoe UI,Arial,sans-serif; }
   body{ margin:0; background:var(--bg); color:#111; }
@@ -21,9 +21,11 @@
   h3{ margin:6px 0 10px; font-size:16px; }
   label{ display:block; font-size:12px; color:var(--muted); margin:6px 0 4px; }
   input, select{ width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:10px; font-size:15px; }
-  .row5{ display:grid; grid-template-columns:140px 1fr 170px 150px 120px; gap:10px; }
+  /* Ahora el grid incluye FDP antes del botón */
+  .row6{ display:grid; grid-template-columns:140px 1fr 170px 150px 220px 140px; gap:10px; }
   .btn{ padding:10px 14px; border:1px solid #d1d5db; border-radius:10px; background:#fff; cursor:pointer; }
   .btn.blue{ background:var(--blue); color:#fff; border-color:var(--blue);}
+  .btn.green{ background:var(--green); color:#fff; border-color:var(--green);}
   .muted{ color:var(--muted); }
   .hidden{ display:none !important; }
   .pill{ background:var(--pill); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:13px; }
@@ -51,7 +53,7 @@
   <!-- Captura (una sola línea + Enter guarda) -->
   <section class="card">
     <h3>Conceptos a facturar</h3>
-    <div class="row5">
+    <div class="row6">
       <div>
         <label>Código / CB</label>
         <input id="inpCodigo" placeholder="Escaneá o escribí y Tab/Enter">
@@ -77,18 +79,6 @@
         <input type="number" id="inpUnit" inputmode="decimal" placeholder="0">
       </div>
       <div>
-        <label style="visibility:hidden">—</label>
-        <button class="btn blue" id="btnAgregar">Agregar venta (Enter)</button>
-      </div>
-    </div>
-    <div id="msgLinea" class="muted" style="margin-top:8px"></div>
-  </section>
-
-  <!-- Pago simple -->
-  <section class="card">
-    <h3>Pago</h3>
-    <div style="display:flex; gap:10px; flex-wrap:wrap">
-      <div>
         <label>Forma de pago</label>
         <select id="fdp" required>
           <option value="">— Elegir forma de pago —</option>
@@ -100,10 +90,15 @@
         </select>
       </div>
       <div>
-        <label>Observaciones (opcional)</label>
-        <input id="obs" placeholder="Apellido y Nº de sobre / nota">
+        <label style="visibility:hidden">—</label>
+        <button class="btn blue" id="btnAgregar">Agregar venta (Enter)</button>
       </div>
     </div>
+    <div style="margin-top:8px">
+      <label>Observaciones (opcional)</label>
+      <input id="obs" placeholder="Apellido y Nº de sobre / nota">
+    </div>
+    <div id="msgLinea" class="muted" style="margin-top:8px"></div>
   </section>
 
   <!-- Últimas 3 ventas -->
@@ -112,10 +107,10 @@
     <div id="ultimas" class="muted">—</div>
   </section>
 
-  <!-- Retiros / Ingresos (solo JU y JI) -->
+  <!-- Herramientas autorizadas (retiros + cierre PDF) -->
   <section class="card hidden" id="panelRetiros">
-    <h3>Retiros / Ingresos de caja (autorizado)</h3>
-    <div style="display:grid; grid-template-columns: 1fr 1fr 2fr 140px; gap:10px;">
+    <h3>Retiros / Ingresos y Cierre (autorizado)</h3>
+    <div style="display:grid; grid-template-columns: 1fr 1fr 2fr 140px; gap:10px; margin-bottom:10px;">
       <div>
         <label>Tipo</label>
         <select id="tipoMov">
@@ -137,7 +132,15 @@
         <button class="btn" id="btnMov">Registrar</button>
       </div>
     </div>
-    <div id="msgMov" class="muted" style="margin-top:8px"></div>
+
+    <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap">
+      <div>
+        <label>Fecha del cierre</label>
+        <input type="date" id="cierreDate">
+      </div>
+      <button class="btn green" id="btnCierre">Cierre del día (PDF)</button>
+      <div id="msgMov" class="muted" style="margin-left:auto"></div>
+    </div>
   </section>
 
 </div>
@@ -160,18 +163,17 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbyWN-Z5kEQjL4vmgq-MAYxhL6Amwv6a3g5G7r6-CSuj0rIMBMSlTbcuMeyq1bYyui54xA/exec';
-const WITHDRAW_AUTH = ['JU','JI']; // sólo ellos ven retiros
+const API_URL = 'https://script.google.com/macros/s/AKfycbyLQw_joedRaLMyVFajR-Rsk5rKRzajDo2hhyEJAZx552Krl-U3lO-pFy2cFGEczHD7pw/exec';
+const WITHDRAW_AUTH = ['JU','JI']; // sólo ellos ven retiros + cierre
 
 // ===== Helpers
 const qs = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Number(n||0));
-function setEmp(emp){ localStorage.setItem('OC_EMP_CODE', (emp.codigo+'').toUpperCase()); localStorage.setItem('OC_EMP_NAME', emp.nombre); qs('#empName').textContent = emp.nombre; toggleRetiros(); }
+function setEmp(emp){ localStorage.setItem('OC_EMP_CODE', (emp.codigo+'').toUpperCase()); localStorage.setItem('OC_EMP_NAME', emp.nombre); qs('#empName').textContent = emp.nombre; toggleAutorizados(); }
 function getEmp(){ return {codigo:(localStorage.getItem('OC_EMP_CODE')||'').toUpperCase(), nombre:localStorage.getItem('OC_EMP_NAME')||''}; }
 function showLogin(){
   qs('#loginModal').classList.remove('hidden');
-  qs('#empCode').value = '';        // SIEMPRE vacío
-  qs('#loginMsg').textContent = '';
+  qs('#empCode').value = ''; qs('#loginMsg').textContent = '';
   setTimeout(()=>qs('#empCode').focus(), 0);
 }
 function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
@@ -196,7 +198,7 @@ async function cargarUltimas(){
   `).join('');
 }
 
-// ===== Buscar en Stock (Enter o Tab en Código)
+// ===== Buscar en Stock
 async function buscarStock(num){ const r = await apiGet({action:'stock_get', num}); return r.ok ? r.data : null; }
 async function lookupDesdeCodigo(e){
   if(e.key!=='Enter' && e.key!=='Tab') return;
@@ -208,30 +210,29 @@ async function lookupDesdeCodigo(e){
   if(it){
     qs('#inpDesc').value = it.descripcion || '';
     qs('#inpUnit').value = Number(it.precio||0);
-    msg.textContent = ''; // no dejamos mensajes colgados
+    msg.textContent = '';
   }else{
-    // no existe en stock: no bloqueamos — va manual
     msg.textContent = '';
   }
   qs('#inpDesc').focus();
 }
 
-// ===== Guardar (Enter en precio o botón Agregar)
+// ===== Guardar venta
 async function guardarVenta(){
   if (SAVING) return;
   const emp = getEmp(); if(!emp.codigo){ showLogin(); return; }
 
-  const codigo = (qs('#inpCodigo').value||'').trim();   // se guarda tal cual
+  const codigo = (qs('#inpCodigo').value||'').trim();
   const rubro  = qs('#inpRubro').value;
   const desc   = (qs('#inpDesc').value||'').trim();
   const unit   = Number(qs('#inpUnit').value||0);
   const fdp    = qs('#fdp').value;
   const obs    = (qs('#obs').value||'').trim();
 
-  if(!rubro){ Swal.fire('Falta rubro','Tenés que elegir un rubro.','warning'); qs('#inpRubro').focus(); return; }
+  if(!rubro){ Swal.fire('Falta rubro','Elegí un rubro.','warning'); qs('#inpRubro').focus(); return; }
   if(!fdp){ Swal.fire('Falta forma de pago','Elegí la forma de pago.','warning'); qs('#fdp').focus(); return; }
   if(!desc || unit<=0){
-    Swal.fire('Faltan datos','Completá descripción y un precio mayor a 0.','warning');
+    Swal.fire('Faltan datos','Completá descripción y precio mayor a 0.','warning');
     if(!desc) qs('#inpDesc').focus(); else qs('#inpUnit').focus();
     return;
   }
@@ -239,49 +240,38 @@ async function guardarVenta(){
   const descFinal = `${rubro}: ${desc}`.trim();
 
   try{
-    SAVING = true;
-    qs('#btnAgregar').disabled = true;
-    showSaving();
-
+    SAVING = true; qs('#btnAgregar').disabled = true; showSaving();
     const res = await apiPost({
-      action: 'venta_add',
+      action:'venta_add',
       empleadoCodigo: emp.codigo,
-      fdp,
-      monto: unit,              // total (>=1)
-      numItem: codigo,          // tal cual lo tipeó, exista o no en Stock
-      precioItem: unit,         // precio unit
-      descripcion: descFinal,
-      obs
+      fdp, monto: unit,
+      numItem: codigo,
+      precioItem: unit,
+      descripcion: descFinal, obs
     });
-
-    qs('#btnAgregar').disabled = false;
-    SAVING = false;
-    closeSaving();
+    qs('#btnAgregar').disabled = false; SAVING=false; closeSaving();
 
     if(res.ok){
       await cargarUltimas();
-      // limpiar TODO y que no quede mensaje
       qs('#inpCodigo').value=''; qs('#inpDesc').value=''; qs('#inpUnit').value='';
       qs('#inpRubro').value=''; qs('#fdp').value=''; qs('#obs').value='';
       qs('#msgLinea').textContent='';
-
-      Swal.fire({icon:'success', title:'Venta registrada', text:`Importe: ${money(res.data.total)}`, timer:1100, showConfirmButton:false});
+      Swal.fire({icon:'success', title:'Venta registrada', timer:1100, showConfirmButton:false});
       setTimeout(()=> showLogin(), 650);
     }else{
       Swal.fire('Error', res.error || 'No se pudo guardar.', 'error');
     }
   }catch(e){
-    qs('#btnAgregar').disabled = false;
-    SAVING = false;
-    closeSaving();
+    qs('#btnAgregar').disabled=false; SAVING=false; closeSaving();
     Swal.fire('Error de red', e.message||'Falló la conexión', 'error');
   }
 }
 
-// ===== Retiros (solo JU/JI)
-function toggleRetiros(){
+// ===== Retiros + Cierre (solo JU/JI)
+function toggleAutorizados(){
   const emp = getEmp();
-  qs('#panelRetiros').classList.toggle('hidden', !WITHDRAW_AUTH.includes((emp.codigo||'').toUpperCase()));
+  const auth = WITHDRAW_AUTH.includes((emp.codigo||'').toUpperCase());
+  qs('#panelRetiros').classList.toggle('hidden', !auth);
 }
 async function registrarMov(){
   const emp = getEmp(); if(!emp.codigo){ showLogin(); return; }
@@ -296,8 +286,26 @@ async function registrarMov(){
   if(res.ok){ p.textContent='Movimiento registrado'; qs('#montoMov').value=''; qs('#descMov').value=''; }
   else { p.textContent = res.error || 'Error'; }
 }
+async function generarCierre(){
+  const emp = getEmp(); if(!emp.codigo){ showLogin(); return; }
+  if(!WITHDRAW_AUTH.includes(emp.codigo)) { Swal.fire('No autorizado','','warning'); return; }
+  const d = qs('#cierreDate').value || new Date().toISOString().slice(0,10);
+  Swal.fire({title:'Generando PDF…', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+  try{
+    const r = await apiGet({action:'cierre_pdf', code:emp.codigo, date:d});
+    Swal.close();
+    if(r.ok && r.data && r.data.url){
+      window.open(r.data.url, '_blank');
+      Swal.fire('Cierre generado', r.data.name || 'Listo para imprimir', 'success');
+    }else{
+      Swal.fire('Error', (r && r.error) || 'No se pudo generar el PDF', 'error');
+    }
+  }catch(e){
+    Swal.close(); Swal.fire('Error de red', e.message || 'Falló la conexión', 'error');
+  }
+}
 
-// ===== Login (focus y Enter para entrar)
+// ===== Login
 async function doLogin(){
   const code = (qs('#empCode').value||'').trim().toUpperCase();
   if(!code) return;
@@ -318,15 +326,16 @@ function init(){
   qs('#inpDesc').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); qs('#inpUnit').focus(); }});
   qs('#inpUnit').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); guardarVenta(); }});
   qs('#btnAgregar').onclick = guardarVenta;
+
   qs('#btnMov').onclick = registrarMov;
+  qs('#btnCierre').onclick = generarCierre;
 
   qs('#btnLogin').onclick = doLogin;
   qs('#empCode').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doLogin(); }});
   qs('#btnCambiar').onclick = showLogin;
 
-  // login persistente
   const emp = getEmp();
-  if(!emp.codigo){ showLogin(); } else { qs('#empName').textContent = emp.nombre; toggleRetiros(); }
+  if(!emp.codigo){ showLogin(); } else { qs('#empName').textContent = emp.nombre; toggleAutorizados(); }
 
   cargarUltimas();
 }
