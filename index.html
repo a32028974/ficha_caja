@@ -3,100 +3,196 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Caja diaria • Óptica Cristal</title>
+<title>Emitir Comprobante • Óptica Cristal</title>
 <link rel="icon" href="logo.png" />
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --muted:#667085; --ok:#0a7; --err:#c33; }
-  * { box-sizing: border-box; font-family: system-ui, Arial, sans-serif; }
-  body { margin:0; background:var(--bg); color:#111; }
-  header { display:flex; gap:12px; align-items:center; padding:12px 16px; background:#fff; border-bottom:1px solid #e5e7eb; position:sticky; top:0; }
-  header .tag { padding:6px 10px; border:1px solid #e5e7eb; border-radius:999px; background:#fafafa; font-size:14px; }
-  main { max-width:980px; margin:18px auto; padding:0 12px 60px; }
-  .card { background:var(--card); border:1px solid #e5e7eb; border-radius:14px; padding:14px; margin-bottom:14px; }
-  h2 { margin:4px 0 10px; font-size:18px; }
-  label { display:block; font-size:13px; color:var(--muted); margin:8px 0 6px; }
-  input, select, textarea { width:100%; padding:10px 12px; border:1px solid #d0d5dd; border-radius:10px; font-size:15px; }
-  .row { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-  .row3 { display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:10px; }
-  .btn { padding:10px 14px; border-radius:10px; border:1px solid #d0d5dd; background:#fff; cursor:pointer; }
-  .btn.primary { background:#111; color:#fff; border-color:#111; }
-  .btn.ghost { background:#fff; }
-  .right { display:flex; gap:8px; justify-content:flex-end; }
-  table { width:100%; border-collapse: collapse; }
-  th, td { padding:10px; border-bottom:1px solid #eee; font-size:14px; text-align:left; }
-  .tot { display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; }
-  .pill { border:1px solid #e5e7eb; border-radius:12px; padding:10px; background:#fafafa; }
-  .ok { color:var(--ok); } .err{ color:var(--err); }
-  .modal { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; }
-  .hide { display:none; }
-  .modal .inner { width:100%; max-width:400px; background:#fff; border-radius:16px; padding:18px; }
+  :root{
+    --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --muted:#6b7280; --green:#16a34a; --red:#dc2626; --blue:#2563eb; --pill:#f9fafb;
+  }
+  *{ box-sizing:border-box; font-family:system-ui,Segoe UI,Arial,sans-serif; }
+  body{ margin:0; background:var(--bg); color:#111; }
+  .wrap{ max-width:1100px; margin:18px auto; padding:0 14px 80px; }
+  header{ display:flex; align-items:center; gap:14px; padding:10px 14px; background:#fff; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5;}
+  header img{ height:42px; }
+  header .title{ font-weight:700; font-size:20px; margin-right:auto; }
+  .tag{ border:1px solid var(--line); background:#fff; padding:6px 10px; border-radius:999px; font-size:13px; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; margin:12px 0; }
+  h3{ margin:6px 0 10px; font-size:16px; }
+  label{ display:block; font-size:12px; color:var(--muted); margin:6px 0 4px; }
+  input, select{ width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:10px; font-size:15px; }
+  .row{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .row5{ display:grid; grid-template-columns:120px 1fr 110px 130px 90px; gap:10px; }
+  .btn{ padding:10px 14px; border:1px solid #d1d5db; border-radius:10px; background:#fff; cursor:pointer; }
+  .btn.primary{ background:#111; color:#fff; border-color:#111; }
+  .btn.green{ background:var(--green); color:#fff; border-color:var(--green);}
+  .btn.red{ background:var(--red); color:#fff; border-color:var(--red);}
+  .btn.blue{ background:var(--blue); color:#fff; border-color:var(--blue);}
+  table{ width:100%; border-collapse:collapse; }
+  th,td{ padding:10px; border-bottom:1px solid var(--line); font-size:14px; text-align:left;}
+  th{ background:#fbfbfc; }
+  .right{ text-align:right; }
+  .muted{ color:var(--muted); }
+  .toolbar{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+  .flex{ display:flex; gap:10px; align-items:center; }
+  .hidden{ display:none !important; }
+  .badge{ background:var(--pill); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:13px; }
+  .ok{ color:var(--green); } .err{ color:var(--red); }
+  /* Modal login */
+  .modal{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50;}
+  .modal .inner{ width:100%; max-width:420px; background:#fff; border-radius:14px; padding:18px; border:1px solid var(--line);}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="tag">📅 <span id="hoy"></span></div>
-  <div class="tag">👤 Empleado: <b id="empName">—</b></div>
-  <div class="right" style="margin-left:auto">
-    <button class="btn" id="btnCambiar">Cambiar empleado</button>
-    <button class="btn" id="btnTotales">Refrescar totales</button>
-    <button class="btn primary" id="btnCierre">Cierre del día (PDF)</button>
-  </div>
+  <img src="logo.png" alt="Óptica Cristal">
+  <div class="title">Emitir Comprobante</div>
+  <div class="badge">📅 <span id="hoy"></span></div>
+  <div class="badge">👤 <b id="empName">—</b></div>
+  <button class="btn" id="btnCambiar">Cambiar empleado</button>
 </header>
 
-<main>
-  <!-- VENTA -->
+<div class="wrap">
+
+  <!-- Datos del comprobante -->
   <section class="card">
-    <h2>Venta</h2>
-    <div class="row3">
+    <h3>Datos del Comprobante</h3>
+    <div class="flex" style="flex-wrap:wrap">
+      <div class="badge">Fecha: <span id="fechaHoy" style="margin-left:6px"></span></div>
+      <div class="badge">0005 FAC ELECTRONICA</div>
+      <div class="badge">FACTURA <b style="margin-left:6px">B</b></div>
+    </div>
+  </section>
+
+  <!-- Datos del cliente (plegado simple, se puede expandir luego) -->
+  <section class="card">
+    <h3>Datos del Cliente <span class="muted">(opcional)</span></h3>
+    <div class="row" style="grid-template-columns: 1.2fr 1fr 1fr 1fr;">
       <div>
-        <label>Forma de pago</label>
-        <select id="fdp">
-          <option>Efectivo</option>
-          <option>MercadoPago</option>
-          <option>Transferencia</option>
-          <option>Tarjeta</option>
+        <label>Nombre / Razón social</label>
+        <input id="cliNombre" placeholder="Consumidor Final">
+      </div>
+      <div>
+        <label>Documento (DNI/CUIT)</label>
+        <input id="cliDoc" placeholder="">
+      </div>
+      <div>
+        <label>Cond. IVA</label>
+        <select id="cliIva">
+          <option value="CF">Consumidor Final</option>
+          <option value="RI">Resp. Inscripto</option>
+          <option value="MT">Monotributo</option>
+          <option value="EX">Exento</option>
         </select>
       </div>
       <div>
-        <label>Total cobrado</label>
-        <input type="number" id="monto" inputmode="decimal" placeholder="0" />
-      </div>
-      <div>
-        <label>N° de anteojo (opcional)</label>
-        <div style="display:flex; gap:8px">
-          <input id="numItem" placeholder="ej. 12345" />
-          <button class="btn" id="btnBuscar">Buscar</button>
-        </div>
+        <label>Contacto (opcional)</label>
+        <input id="cliContacto" placeholder="Email o Tel.">
       </div>
     </div>
+  </section>
 
-    <div class="row">
+  <!-- Conceptos a facturar -->
+  <section class="card">
+    <h3>Conceptos a facturar</h3>
+
+    <!-- Línea de captura tipo “comprobante” -->
+    <div class="row5">
       <div>
-        <label>Precio de stock (editable)</label>
-        <input type="number" id="precioItem" inputmode="decimal" placeholder="0" />
+        <label>Código / CB</label>
+        <input id="inpCodigo" placeholder="Escaneá o escribí y Enter">
       </div>
       <div>
         <label>Descripción</label>
-        <input id="descripcion" placeholder="Marca / Modelo / Color…" />
+        <input id="inpDesc" placeholder="Se completa desde Stock (editable)">
+      </div>
+      <div>
+        <label>Rubro</label>
+        <select id="inpRubro">
+          <option>Receta</option>
+          <option>Lentes de contacto</option>
+          <option>Líquidos LC</option>
+          <option>Reparaciones y varios</option>
+          <option>Sol</option>
+          <option>Fotos y pilas</option>
+        </select>
+      </div>
+      <div>
+        <label>Precio Unit.</label>
+        <input type="number" id="inpUnit" inputmode="decimal" placeholder="0">
+      </div>
+      <div>
+        <label style="visibility:hidden">Agregar</label>
+        <button class="btn blue" id="btnAgregar">Agregar</button>
       </div>
     </div>
 
-    <label>Observaciones</label>
-    <textarea id="obs" rows="2" placeholder="Opcional"></textarea>
-
-    <div class="right" style="margin-top:10px">
-      <button class="btn ghost" id="btnLimpiar">Limpiar</button>
-      <button class="btn primary" id="btnVender">Agregar venta</button>
+    <div class="flex" style="margin-top:8px">
+      <span class="muted">Tip: Enter en “Código/CB” busca en Stock. Si no existe, cargá manual.</span>
+      <span id="msgLinea" class="muted"></span>
     </div>
 
-    <p id="msgVenta"></p>
+    <!-- Tabla de ítems -->
+    <div style="margin-top:10px; overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:90px">Código</th>
+            <th>Descripción</th>
+            <th style="width:120px">Rubro</th>
+            <th style="width:80px">Cant</th>
+            <th style="width:120px" class="right">Unit</th>
+            <th style="width:80px" class="right">IVA</th>
+            <th style="width:120px" class="right">Total</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot>
+          <tr>
+            <th colspan="6" class="right">TOTAL</th>
+            <th class="right" id="tneto">$0</th>
+            <th></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
   </section>
 
-  <!-- MOVIMIENTO -->
+  <!-- Datos adicionales / pago -->
   <section class="card">
-    <h2>Movimiento de caja</h2>
-    <div class="row">
+    <h3>Pago</h3>
+    <div class="flex" style="justify-content:space-between; flex-wrap:wrap">
+      <div class="flex" style="gap:10px; flex-wrap:wrap">
+        <div>
+          <label>Forma de pago</label>
+          <select id="fdp">
+            <option>Efectivo</option>
+            <option>MercadoPago</option>
+            <option>Transferencia</option>
+            <option>Tarjeta</option>
+          </select>
+        </div>
+        <div>
+          <label>Paga con $</label>
+          <input type="number" id="pagaCon" inputmode="decimal" placeholder="(opcional)">
+        </div>
+        <div>
+          <label>Vuelto $</label>
+          <input id="vuelto" disabled>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn red" id="btnCancelar">Cancelar Comprobante</button>
+        <button class="btn green" id="btnConfirmar">Confirmar Comprobante</button>
+      </div>
+    </div>
+    <div id="msgComprobante" class="muted" style="margin-top:8px"></div>
+  </section>
+
+  <!-- Retiros (solo JU/JI) -->
+  <section class="card" id="panelRetiros" class="hidden">
+    <h3>Retiros / Ingresos de caja (autorizado)</h3>
+    <div class="row" style="grid-template-columns: 1fr 1fr 2fr 160px;">
       <div>
         <label>Tipo</label>
         <select id="tipoMov">
@@ -107,114 +203,166 @@
       </div>
       <div>
         <label>Monto</label>
-        <input type="number" id="montoMov" inputmode="decimal" placeholder="0" />
+        <input type="number" id="montoMov" inputmode="decimal" placeholder="0">
+      </div>
+      <div>
+        <label>Descripción</label>
+        <input id="descMov" placeholder="Motivo">
+      </div>
+      <div>
+        <label style="visibility:hidden">—</label>
+        <button class="btn" id="btnMov">Registrar</button>
       </div>
     </div>
-    <label>Descripción</label>
-    <input id="descMov" placeholder="Detalle…" />
-    <div class="right" style="margin-top:10px">
-      <button class="btn primary" id="btnMov">Registrar movimiento</button>
-    </div>
-    <p id="msgMov"></p>
+    <div id="msgMov" class="muted" style="margin-top:8px"></div>
   </section>
 
-  <!-- TOTALES -->
-  <section class="card">
-    <h2>Totales del día</h2>
-    <div class="tot">
-      <div class="pill">Efectivo<br><b id="tEfe">$0</b></div>
-      <div class="pill">MP<br><b id="tMp">$0</b></div>
-      <div class="pill">Transf.<br><b id="tTr">$0</b></div>
-      <div class="pill">Tarjeta<br><b id="tTj">$0</b></div>
-      <div class="pill">TOTAL<br><b id="tTot">$0</b></div>
-    </div>
-  </section>
-</main>
+</div>
 
 <!-- Modal login -->
 <div class="modal" id="loginModal">
   <div class="inner">
     <h3>Ingresar empleado</h3>
-    <p style="color:#667085;margin-top:-4px">Escribí tu <b>código</b> (ej. F1, F2…). No hay clave.</p>
+    <p class="muted">Escribí tu <b>código</b> (ej: C, R, L, JU, JI, S). No hay clave.</p>
     <label>Código de empleado</label>
-    <input id="empCode" placeholder="F1" />
-    <div class="right" style="margin-top:12px">
+    <input id="empCode" placeholder="JU">
+    <div class="toolbar" style="margin-top:12px; justify-content:flex-end">
       <button class="btn primary" id="btnLogin">Entrar</button>
     </div>
-    <p id="loginMsg"></p>
+    <p id="loginMsg" class="muted"></p>
   </div>
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbzrlMofu7LxTKGwjaS-eAdWghdc_MnbKDQAimpj1R8wACceE1FAPGIcDtm1UVg1RylPWw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbz3NN9fyuvU0-qaMZM6am7sxopKLtKEQF59kKKeJWeEj7a11UBECFpKzlFRLR8c8qOQoA/exec';
+const WITHDRAW_AUTH = ['JU','JI']; // solo estos pueden ver el panel de retiros
 
-const qs = (s)=>document.querySelector(s);
+// ===== Helpers
+const qs = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Number(n||0));
+const toIvaPerc = () => 21; // visual, sin impacto en el envío (el monto final es el que cobrás)
+function setEmp(emp){ localStorage.setItem('OC_EMP_CODE', (emp.codigo+'').toUpperCase()); localStorage.setItem('OC_EMP_NAME', emp.nombre); qs('#empName').textContent = emp.nombre; toggleRetiros(); }
+function getEmp(){ return {codigo:(localStorage.getItem('OC_EMP_CODE')||'').toUpperCase(), nombre:localStorage.getItem('OC_EMP_NAME')||''}; }
+function showLogin(){ qs('#loginModal').classList.remove('hidden'); qs('#empCode').focus(); }
+function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
+async function apiGet(params){ const r=await fetch(API_URL+'?'+new URLSearchParams(params).toString()); return r.json(); }
+async function apiPost(payload){ const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); return r.json(); }
 
-function setEmp(emp){ localStorage.setItem('OC_EMP_CODE', emp.codigo); localStorage.setItem('OC_EMP_NAME', emp.nombre); qs('#empName').textContent = emp.nombre; }
-function getEmp(){ return {codigo: localStorage.getItem('OC_EMP_CODE')||'', nombre: localStorage.getItem('OC_EMP_NAME')||''}; }
-
-function showLogin(){ qs('#loginModal').classList.remove('hide'); qs('#empCode').focus(); }
-function hideLogin(){ qs('#loginModal').classList.add('hide'); }
-
-async function apiGet(params){
-  const url = API_URL + '?' + new URLSearchParams(params).toString();
-  const r = await fetch(url); return r.json();
+// ===== Estado
+let items = []; // {codigo, desc, rubro, cant, unit, ivaPerc, total}
+function recalc(){
+  let total=0;
+  items.forEach(it => { it.total = Number(it.cant||1)*Number(it.unit||0); total+=it.total; });
+  qs('#tneto').textContent = money(total);
+  const paga = Number(qs('#pagaCon').value||0);
+  qs('#vuelto').value = paga ? money(paga - total) : '';
 }
-async function apiPost(payload){
-  const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
-  return r.json();
+function render(){
+  const tb = qs('#tbody'); tb.innerHTML='';
+  items.forEach((it,idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${it.codigo||''}</td>
+      <td>${it.desc||''}</td>
+      <td>${it.rubro||''}</td>
+      <td><input type="number" value="${it.cant}" style="width:70px" data-idx="${idx}" class="qty"></td>
+      <td class="right"><input type="number" value="${it.unit}" style="width:110px;text-align:right" data-idx="${idx}" class="unit"></td>
+      <td class="right">${it.ivaPerc}%</td>
+      <td class="right">${money(it.total)}</td>
+      <td class="right"><button class="btn" data-idx="${idx}" onclick="delItem(${idx})">✕</button></td>`;
+    tb.appendChild(tr);
+  });
+  // bind inputs
+  tb.querySelectorAll('.qty').forEach(inp=>{
+    inp.oninput = (e)=>{ const i=Number(e.target.dataset.idx); items[i].cant = Number(e.target.value||1); recalc(); render(); };
+  });
+  tb.querySelectorAll('.unit').forEach(inp=>{
+    inp.oninput = (e)=>{ const i=Number(e.target.dataset.idx); items[i].unit = Number(e.target.value||0); recalc(); render(); };
+  });
+  recalc();
 }
+window.delItem = (idx)=>{ items.splice(idx,1); render(); }
 
-async function doLogin(){
-  const code = qs('#empCode').value.trim();
-  if(!code) return;
-  const res = await apiGet({action:'login', code});
-  const p = qs('#loginMsg');
-  if(res.ok){ setEmp(res.data); hideLogin(); p.textContent=''; refreshTotales(); }
-  else { p.textContent = res.error; p.className='err'; }
+// ===== Captura de línea
+async function buscarStockPorCodigo(num){
+  const r = await apiGet({action:'stock_get', num});
+  return r.ok ? r.data : null;
 }
-
-async function buscarItem(){
-  const num = qs('#numItem').value.trim();
-  if(!num) return;
-  const res = await apiGet({action:'stock_get', num});
-  const p = qs('#msgVenta');
-  if(res.ok){
-    const it = res.data;
-    qs('#precioItem').value = it.precio || 0;
-    qs('#descripcion').value = it.descripcion || '';
-    p.textContent = 'Item encontrado en Stock';
-    p.className = 'ok';
+async function onEnterCodigo(e){
+  if(e.key !== 'Enter') return;
+  const code = qs('#inpCodigo').value.trim();
+  if(!code){ qs('#inpDesc').focus(); return; }
+  const msg = qs('#msgLinea');
+  const found = await buscarStockPorCodigo(code);
+  if(found){
+    qs('#inpDesc').value = found.descripcion || '';
+    qs('#inpUnit').value = Number(found.precio||0);
+    msg.textContent = 'Producto encontrado en Stock';
+    msg.className = 'ok';
+    qs('#inpDesc').focus();
   }else{
-    p.textContent = res.error; p.className='err';
+    msg.textContent = 'No existe en Stock, cargá manual.';
+    msg.className = 'err';
+    qs('#inpDesc').focus();
   }
 }
-
-async function agregarVenta(){
-  const emp = getEmp();
-  if(!emp.codigo){ showLogin(); return; }
-  const payload = {
-    action: 'venta_add',
-    empleadoCodigo: emp.codigo,
-    fdp: qs('#fdp').value,
-    monto: Number(qs('#monto').value||0),
-    numItem: qs('#numItem').value.trim(),
-    precioItem: Number(qs('#precioItem').value||0),
-    descripcion: qs('#descripcion').value.trim(),
-    obs: qs('#obs').value.trim()
-  };
-  const res = await apiPost(payload);
-  const p = qs('#msgVenta');
-  if(res.ok){
-    p.textContent = res.data.msg + ' • ' + money(res.data.totalLinea);
-    p.className = 'ok';
-    limpiarVenta();
-    refreshTotales();
-  } else { p.textContent = res.error; p.className='err'; }
+function agregarLinea(){
+  const codigo = qs('#inpCodigo').value.trim();
+  const desc   = qs('#inpDesc').value.trim();
+  const unit   = Number(qs('#inpUnit').value||0);
+  const rubro  = qs('#inpRubro').value;
+  if(!desc || !unit){ qs('#msgLinea').textContent='Completá descripción y precio'; qs('#msgLinea').className='err'; return; }
+  const it = {codigo, desc: `${rubro}: ${desc}`, rubro, cant:1, unit, ivaPerc: toIvaPerc(), total: unit};
+  items.push(it);
+  render();
+  // limpiar línea
+  qs('#inpCodigo').value=''; qs('#inpDesc').value=''; qs('#inpUnit').value=''; qs('#inpCodigo').focus();
+  const msg = qs('#msgLinea'); msg.textContent = 'Ítem agregado'; msg.className='ok';
 }
 
-async function agregarMov(){
+// ===== Confirmar / Cancelar
+async function confirmar(){
+  const emp = getEmp();
+  if(!emp.codigo){ showLogin(); return; }
+  if(items.length===0){ qs('#msgComprobante').textContent='Agregá al menos un ítem.'; qs('#msgComprobante').className='err'; return; }
+
+  const fdp = qs('#fdp').value;
+  let okCount=0, fail=[];
+  for(const it of items){
+    const res = await apiPost({
+      action: 'venta_add',
+      empleadoCodigo: emp.codigo,
+      fdp,
+      monto: Number(it.total||0),
+      numItem: it.codigo || '',
+      precioItem: Number(it.unit||0),
+      descripcion: it.desc
+    });
+    if(res.ok) okCount++; else fail.push(res.error||'Error');
+  }
+  if(fail.length===0){
+    qs('#msgComprobante').textContent = `Comprobante registrado: ${okCount} ítems.`;
+    qs('#msgComprobante').className='ok';
+    items = []; render(); qs('#inpCodigo').focus();
+  }else{
+    qs('#msgComprobante').textContent = `Algunos ítems fallaron: ${fail.join(' | ')}`;
+    qs('#msgComprobante').className='err';
+  }
+}
+function cancelar(){
+  items=[]; render();
+  qs('#inpCodigo').value=''; qs('#inpDesc').value=''; qs('#inpUnit').value='';
+  qs('#msgComprobante').textContent='Comprobante cancelado.'; qs('#msgComprobante').className='muted';
+  qs('#inpCodigo').focus();
+}
+
+// ===== Retiros (solo JU/JI)
+function toggleRetiros(){
+  const emp = getEmp();
+  const show = WITHDRAW_AUTH.includes((emp.codigo||'').toUpperCase());
+  qs('#panelRetiros').classList.toggle('hidden', !show);
+}
+async function registrarMov(){
   const emp = getEmp();
   if(!emp.codigo){ showLogin(); return; }
   const res = await apiPost({
@@ -225,56 +373,41 @@ async function agregarMov(){
     descripcion: qs('#descMov').value.trim()
   });
   const p = qs('#msgMov');
-  if(res.ok){ p.textContent = 'Movimiento registrado'; p.className='ok'; qs('#montoMov').value=''; qs('#descMov').value=''; refreshTotales(); }
-  else { p.textContent = res.error; p.className='err'; }
+  if(res.ok){
+    p.textContent = 'Movimiento registrado'; p.className='ok';
+    qs('#montoMov').value=''; qs('#descMov').value='';
+  } else { p.textContent = res.error; p.className='err'; }
 }
 
-function limpiarVenta(){
-  qs('#monto').value = '';
-  qs('#numItem').value = '';
-  qs('#precioItem').value = '';
-  qs('#descripcion').value = '';
-  qs('#obs').value = '';
+// ===== Login
+async function doLogin(){
+  const code = (qs('#empCode').value||'').trim();
+  if(!code) return;
+  const r = await apiGet({action:'login', code});
+  const m = qs('#loginMsg');
+  if(r.ok){ setEmp(r.data); m.textContent=''; hideLogin(); qs('#inpCodigo').focus(); }
+  else { m.textContent = r.error || 'Código inválido'; m.className='err'; }
 }
 
-async function refreshTotales(){
-  const r = await apiGet({action:'totales'});
-  if(r.ok){
-    const t = r.data;
-    qs('#tEfe').textContent = money(t.EFECTIVO);
-    qs('#tMp').textContent  = money(t.MP);
-    qs('#tTr').textContent  = money(t.TRANSF);
-    qs('#tTj').textContent  = money(t.TARJETA);
-    qs('#tTot').textContent = money(t.TOTAL);
-  }
-}
-
-async function generarCierre(){
-  // opcionalmente podrías pasar ?fecha=YYYY-MM-DD
-  const r = await apiGet({action:'cierre_pdf'});
-  if(r.ok && r.data && r.data.link){
-    window.open(r.data.link, '_blank');
-  }else{
-    alert(r.error || 'No se pudo generar el cierre');
-  }
-}
-
+// ===== Init
 function init(){
-  qs('#hoy').textContent = new Date().toLocaleDateString('es-AR', {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
-  const emp = getEmp();
-  if(!emp.codigo){ showLogin(); } else { qs('#empName').textContent = emp.nombre; }
-  refreshTotales();
-
+  const d = new Date();
+  qs('#hoy').textContent = d.toLocaleDateString('es-AR',{weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
+  qs('#fechaHoy').textContent = d.toLocaleDateString('es-AR');
+  // foco inicial y atajos
+  qs('#inpCodigo').focus();
+  qs('#inpCodigo').addEventListener('keydown', onEnterCodigo);
+  qs('#btnAgregar').onclick = agregarLinea;
+  qs('#btnConfirmar').onclick = confirmar;
+  qs('#btnCancelar').onclick = cancelar;
+  qs('#btnMov').onclick = registrarMov;
   qs('#btnLogin').onclick = doLogin;
-  qs('#btnCambiar').onclick = ()=>{ showLogin(); };
-  qs('#btnTotales').onclick = refreshTotales;
-  qs('#btnBuscar').onclick = buscarItem;
-  qs('#btnVender').onclick = agregarVenta;
-  qs('#btnLimpiar').onclick = limpiarVenta;
-  qs('#btnMov').onclick = agregarMov;
-  qs('#btnCierre').onclick = generarCierre;
-
-  qs('#empCode').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+  qs('#btnCambiar').onclick = showLogin;
+  qs('#pagaCon').oninput = recalc;
+  // login persistente
+  const emp = getEmp();
+  if(!emp.codigo){ showLogin(); } else { qs('#empName').textContent = emp.nombre; toggleRetiros(); }
+  render();
 }
 init();
 </script>
