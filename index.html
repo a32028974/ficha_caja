@@ -92,10 +92,11 @@
         <label>Forma de pago</label>
         <select id="fdp" required>
           <option value="">— Elegir forma de pago —</option>
-          <option>Efectivo</option>
-          <option>MercadoPago</option>
-          <option>Transferencia</option>
-          <option>Tarjeta</option>
+          <option>EFECTIVO</option>
+          <option>MERCADOPAGO</option>
+          <option>TRANSFERENCIA</option>
+          <option>TARJETA DE CRÉDITO</option>
+          <option>TARJETA DE DÉBITO</option>
         </select>
       </div>
       <div>
@@ -147,7 +148,7 @@
     <h3>Ingresar empleado</h3>
     <p class="muted">Escribí tu <b>código</b> (C, R, L, JU, JI, S). No hay clave.</p>
     <label>Código de empleado</label>
-    <input id="empCode" placeholder="JU">
+    <input id="empCode" placeholder="">
     <div style="display:flex; justify-content:flex-end; margin-top:12px;">
       <button class="btn" id="btnLogin">Entrar</button>
     </div>
@@ -159,7 +160,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwQynTvuGT64Fdc05mlmlpgnG8xaWHhNilthemYuIxBSfYFGVcc70VMYRK0DasUTSPRAw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyWN-Z5kEQjL4vmgq-MAYxhL6Amwv6a3g5G7r6-CSuj0rIMBMSlTbcuMeyq1bYyui54xA/exec';
 const WITHDRAW_AUTH = ['JU','JI']; // sólo ellos ven retiros
 
 // ===== Helpers
@@ -167,7 +168,12 @@ const qs = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Number(n||0));
 function setEmp(emp){ localStorage.setItem('OC_EMP_CODE', (emp.codigo+'').toUpperCase()); localStorage.setItem('OC_EMP_NAME', emp.nombre); qs('#empName').textContent = emp.nombre; toggleRetiros(); }
 function getEmp(){ return {codigo:(localStorage.getItem('OC_EMP_CODE')||'').toUpperCase(), nombre:localStorage.getItem('OC_EMP_NAME')||''}; }
-function showLogin(){ qs('#loginModal').classList.remove('hidden'); setTimeout(()=>qs('#empCode').focus(), 0); }
+function showLogin(){
+  qs('#loginModal').classList.remove('hidden');
+  qs('#empCode').value = '';        // SIEMPRE vacío
+  qs('#loginMsg').textContent = '';
+  setTimeout(()=>qs('#empCode').focus(), 0);
+}
 function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
 async function apiGet(params){ const r = await fetch(API_URL+'?'+new URLSearchParams(params).toString()); return r.json(); }
 // Sin headers para evitar preflight/CORS
@@ -211,8 +217,6 @@ async function lookupDesdeCodigo(e){
 }
 
 // ===== Guardar (Enter en precio o botón Agregar)
-// REGLA: si no está en stock, igual guarda y NUM_ITEM = lo tipeado.
-// Importe no puede ser 0 (validado acá).
 async function guardarVenta(){
   if (SAVING) return;
   const emp = getEmp(); if(!emp.codigo){ showLogin(); return; }
@@ -243,7 +247,7 @@ async function guardarVenta(){
       action: 'venta_add',
       empleadoCodigo: emp.codigo,
       fdp,
-      monto: unit,              // total a guardar (>=1)
+      monto: unit,              // total (>=1)
       numItem: codigo,          // tal cual lo tipeó, exista o no en Stock
       precioItem: unit,         // precio unit
       descripcion: descFinal,
