@@ -7,7 +7,8 @@
 <link rel="icon" href="logo.png" />
 <style>
   :root{
-    --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --muted:#6b7280; --green:#16a34a; --red:#dc2626; --blue:#2563eb; --pill:#f9fafb;
+    --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --muted:#6b7280;
+    --green:#16a34a; --red:#dc2626; --blue:#2563eb; --pill:#f9fafb;
   }
   *{ box-sizing:border-box; font-family:system-ui,Segoe UI,Arial,sans-serif; }
   body{ margin:0; background:var(--bg); color:#111; }
@@ -22,12 +23,9 @@
   input, select{ width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:10px; font-size:15px; }
   .row5{ display:grid; grid-template-columns:140px 1fr 170px 150px 120px; gap:10px; }
   .btn{ padding:10px 14px; border:1px solid #d1d5db; border-radius:10px; background:#fff; cursor:pointer; }
-  .btn.green{ background:var(--green); color:#fff; border-color:var(--green);}
-  .btn.red{ background:var(--red); color:#fff; border-color:var(--red);}
   .btn.blue{ background:var(--blue); color:#fff; border-color:var(--blue);}
   .muted{ color:var(--muted); }
   .hidden{ display:none !important; }
-  .ok{ color:var(--green); } .err{ color:var(--red); }
   .pill{ background:var(--pill); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:13px; }
   .modal{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50;}
   .modal .inner{ width:100%; max-width:420px; background:#fff; border-radius:14px; padding:18px; border:1px solid var(--line);}
@@ -64,7 +62,8 @@
       </div>
       <div>
         <label>Rubro (obligatorio)</label>
-        <select id="inpRubro">
+        <select id="inpRubro" required>
+          <option value="">— Elegir rubro —</option>
           <option>Receta</option>
           <option>Lentes de contacto</option>
           <option>Líquidos LC</option>
@@ -82,6 +81,7 @@
         <button class="btn blue" id="btnAgregar">Agregar venta (Enter)</button>
       </div>
     </div>
+    <!-- Mensaje contextual (solo para avisos de búsqueda/validación). Tras guardar se limpia. -->
     <div id="msgLinea" class="muted" style="margin-top:8px"></div>
   </section>
 
@@ -91,7 +91,8 @@
     <div style="display:flex; gap:10px; flex-wrap:wrap">
       <div>
         <label>Forma de pago</label>
-        <select id="fdp">
+        <select id="fdp" required>
+          <option value="">— Elegir forma de pago —</option>
           <option>Efectivo</option>
           <option>MercadoPago</option>
           <option>Transferencia</option>
@@ -155,8 +156,11 @@
   </div>
 </div>
 
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycby6bFDPLPFEzps3HVQfJb_ADZFyZFYFh8qnb-zcrXQxHrtHv7O-73K7gtDrbxL-i4wndQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbz3NN9fyuvU0-qaMZM6am7sxopKLtKEQF59kKKeJWeEj7a11UBECFpKzlFRLR8c8qOQoA/exec';
 const WITHDRAW_AUTH = ['JU','JI']; // sólo ellos ven retiros
 
 // ===== Helpers
@@ -169,6 +173,13 @@ function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
 async function apiGet(params){ const r = await fetch(API_URL+'?'+new URLSearchParams(params).toString()); return r.json(); }
 // Sin headers para evitar preflight/CORS
 async function apiPost(payload){ const r = await fetch(API_URL,{method:'POST', body:JSON.stringify(payload)}); return r.json(); }
+
+// SweetAlert helpers
+let SAVING = false;
+function showSaving(){
+  Swal.fire({ title:'Guardando…', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+}
+function closeSaving(){ Swal.close(); }
 
 // ===== Últimas 3
 async function cargarUltimas(){
@@ -192,23 +203,25 @@ async function lookupDesdeCodigo(e){
   e.preventDefault();
   const code = (qs('#inpCodigo').value||'').trim();
   const msg = qs('#msgLinea');
-  if(!code){ qs('#inpDesc').focus(); return; }
+  if(!code){ msg.textContent=''; qs('#inpDesc').focus(); return; }
   const it = await buscarStock(code);
   if(it){
     qs('#inpDesc').value = it.descripcion || '';
     qs('#inpUnit').value = Number(it.precio||0);
     msg.textContent = 'Producto encontrado en Stock.';
-    msg.className = 'ok';
+    msg.className = 'muted';
   }else{
     msg.textContent = 'No existe en Stock, cargá manual.';
-    msg.className = 'err';
+    msg.className = 'muted';
   }
   qs('#inpDesc').focus();
 }
 
 // ===== Guardar (Enter en precio o botón Agregar)
 async function guardarVenta(){
+  if (SAVING) return;
   const emp = getEmp(); if(!emp.codigo){ showLogin(); return; }
+
   const codigo = (qs('#inpCodigo').value||'').trim();
   const rubro  = qs('#inpRubro').value;
   const desc   = (qs('#inpDesc').value||'').trim();
@@ -216,36 +229,58 @@ async function guardarVenta(){
   const fdp    = qs('#fdp').value;
   const obs    = (qs('#obs').value||'').trim();
 
-  const p = qs('#msgLinea');
-
-  if(!rubro){ p.textContent='Elegí un rubro.'; p.className='err'; return; }
-  if(!desc || unit<=0){ p.textContent='Completá descripción y precio.'; p.className='err'; return; }
+  if(!rubro){ Swal.fire('Falta rubro','Tenés que elegir un rubro.','warning'); qs('#inpRubro').focus(); return; }
+  if(!fdp){ Swal.fire('Falta forma de pago','Elegí la forma de pago.','warning'); qs('#fdp').focus(); return; }
+  if(!desc || unit<=0){
+    Swal.fire('Faltan datos','Completá descripción y precio.','warning');
+    if(!desc) qs('#inpDesc').focus(); else qs('#inpUnit').focus();
+    return;
+  }
 
   const descFinal = `${rubro}: ${desc}`.trim();
 
-  const res = await apiPost({
-    action: 'venta_add',
-    empleadoCodigo: emp.codigo,
-    fdp,
-    monto: unit,
-    numItem: codigo,
-    precioItem: unit,
-    descripcion: descFinal,
-    obs
-  });
+  try{
+    SAVING = true;
+    qs('#btnAgregar').disabled = true;
+    showSaving();
 
-  if(res.ok){
-    p.textContent = 'Venta registrada ('+ money(res.data.total) +')';
-    p.className   = 'ok';
-    // refrescar últimas
-    await cargarUltimas();
-    // limpiar y volver a login (misma PC para todos)
-    qs('#inpCodigo').value=''; qs('#inpDesc').value=''; qs('#inpUnit').value='';
-    qs('#inpCodigo').focus();
-    setTimeout(()=>{ showLogin(); }, 500);
-  }else{
-    p.textContent = res.error || 'Error al guardar';
-    p.className   = 'err';
+    const res = await apiPost({
+      action: 'venta_add',
+      empleadoCodigo: emp.codigo,
+      fdp,
+      monto: unit,
+      numItem: codigo,
+      precioItem: unit,
+      descripcion: descFinal,
+      obs
+    });
+
+    qs('#btnAgregar').disabled = false;
+    SAVING = false;
+    closeSaving();
+
+    if(res.ok){
+      await cargarUltimas();
+
+      // limpiar TODO y que no quede mensaje en pantalla
+      qs('#inpCodigo').value=''; 
+      qs('#inpDesc').value=''; 
+      qs('#inpUnit').value='';
+      qs('#inpRubro').value='';
+      qs('#fdp').value='';
+      qs('#obs').value='';
+      qs('#msgLinea').textContent='';  // <- no queda texto verde
+
+      Swal.fire({icon:'success', title:'Venta registrada', text:`Importe: ${money(res.data.total)}`, timer:1100, showConfirmButton:false});
+      setTimeout(()=> showLogin(), 650);
+    }else{
+      Swal.fire('Error', res.error || 'No se pudo guardar.', 'error');
+    }
+  }catch(e){
+    qs('#btnAgregar').disabled = false;
+    SAVING = false;
+    closeSaving();
+    Swal.fire('Error de red', e.message||'Falló la conexión', 'error');
   }
 }
 
@@ -264,8 +299,8 @@ async function registrarMov(){
     descripcion: qs('#descMov').value.trim()
   });
   const p = qs('#msgMov');
-  if(res.ok){ p.textContent='Movimiento registrado'; p.className='ok'; qs('#montoMov').value=''; qs('#descMov').value=''; }
-  else { p.textContent = res.error || 'Error'; p.className='err'; }
+  if(res.ok){ p.textContent='Movimiento registrado'; qs('#montoMov').value=''; qs('#descMov').value=''; }
+  else { p.textContent = res.error || 'Error'; }
 }
 
 // ===== Login
@@ -275,7 +310,7 @@ async function doLogin(){
   const r = await apiGet({action:'login', code});
   const m = qs('#loginMsg');
   if(r.ok){ setEmp(r.data); m.textContent=''; hideLogin(); qs('#inpCodigo').focus(); }
-  else { m.textContent = r.error || 'Código inválido'; m.className='err'; }
+  else { m.textContent = r.error || 'Código inválido'; }
 }
 
 // ===== Init
@@ -286,8 +321,8 @@ function init(){
 
   // listeners
   qs('#inpCodigo').addEventListener('keydown', lookupDesdeCodigo);
-  qs('#inpDesc').addEventListener('keydown', e=>{ if(e.key==='Enter'){ qs('#inpUnit').focus(); }});
-  qs('#inpUnit').addEventListener('keydown', e=>{ if(e.key==='Enter'){ guardarVenta(); }});
+  qs('#inpDesc').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); qs('#inpUnit').focus(); }});
+  qs('#inpUnit').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); guardarVenta(); }});
   qs('#btnAgregar').onclick = guardarVenta;
   qs('#btnMov').onclick = registrarMov;
   qs('#btnLogin').onclick = doLogin;
