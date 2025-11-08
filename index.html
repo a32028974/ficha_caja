@@ -55,7 +55,7 @@
     <!-- Fila 1: Código + Descripción (ancha) -->
     <div class="rowTop">
       <div>
-        <label>Código / CB</label>
+        <label>Código</label>
         <input id="inpCodigo" placeholder="Escaneá o escribí y Tab/Enter">
       </div>
       <div>
@@ -91,17 +91,18 @@
           <option>TRANSFERENCIA</option>
           <option>TARJETA DE CRÉDITO</option>
           <option>TARJETA DE DÉBITO</option>
+          <option>Link</option>
         </select>
       </div>
       <div>
         <label style="visibility:hidden">—</label>
-        <button class="btn blue" id="btnAgregar">Agregar venta (Enter)</button>
+        <button class="btn blue" id="btnAgregar">Registrar venta</button>
       </div>
     </div>
 
     <div style="margin-top:10px">
-      <label>Observaciones (opcional)</label>
-      <input id="obs" placeholder="Apellido y Nº de sobre / nota">
+      <label>Observaciones</label>
+      <input id="obs" placeholder="">
     </div>
 
     <div id="msgLinea" class="muted" style="margin-top:8px"></div>
@@ -154,7 +155,7 @@
 <div class="modal" id="loginModal">
   <div class="inner">
     <h3>Ingresar empleado</h3>
-    <p class="muted">Escribí tu <b>código</b> (C, R, L, JU, JI, S). No hay clave.</p>
+    <p class="muted">Escribí tu inicial <b>código</b></p>
     <label>Código de empleado</label>
     <input id="empCode" placeholder="">
     <div style="display:flex; justify-content:flex-end; margin-top:12px;">
