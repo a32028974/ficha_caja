@@ -5,150 +5,191 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Emitir Comprobante • Óptica Cristal</title>
 <link rel="icon" href="logo.png"/>
-<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-  :root{--bg:#f7f7f8;--fg:#111;--muted:#666;--line:#e5e7eb;--btn:#1f2937;--btnH:#374151;}
-  body{font-family:Arial, sans-serif;background:var(--bg);color:var(--fg);margin:0;padding:18px}
-  h1{margin:0 0 12px;font-size:1.2rem}
-  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+  :root{
+    --bg:#0b1220; --card:#111827; --line:#1f2937; --fg:#e5e7eb; --muted:#94a3b8;
+    --accent:#22c55e; --accent2:#3b82f6; --danger:#ef4444;
+  }
+  html,body{height:100%}
+  body{margin:0;background:linear-gradient(180deg,#0b1220,#0e1424);color:var(--fg);font-family:system-ui,Arial}
+  .wrap{max-width:920px;margin:20px auto;padding:0 14px}
+  h1{font-size:1.25rem;margin:0 0 12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
   label{display:block;font-weight:600;margin-top:10px}
-  input,select,button,textarea{width:100%;padding:10px;margin-top:6px;box-sizing:border-box;font-size:16px}
-  textarea{min-height:64px;resize:vertical}
-  button{background:var(--btn);color:#fff;border:0;border-radius:8px;cursor:pointer}
-  button:hover{background:var(--btnH)}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  input,select,button,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0b1324;color:var(--fg);font-size:16px}
+  input::placeholder{color:#6b7280}
+  textarea{min-height:70px;resize:vertical}
+  button{cursor:pointer;border:0;background:var(--accent);color:#051016;font-weight:700}
+  button.secondary{background:#1f2937;color:#e5e7eb;border:1px solid var(--line)}
+  button.blue{background:var(--accent2);color:#041019}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
   .muted{color:var(--muted);font-size:.9rem}
-  #msg{position:sticky;top:0;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px}
+  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#0b1324;border:1px solid var(--line);font-size:.85rem}
+  #msg{margin:10px 0;padding:10px;border-radius:10px;background:#0b1324;border:1px dashed var(--line)}
   .hidden{display:none}
+
+  /* Modal vendedor */
+  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:40}
+  .modal{background:#0f172a;border:1px solid var(--line);border-radius:16px;padding:20px;width:min(420px,92vw);box-shadow:0 20px 70px rgba(0,0,0,.45)}
+  .modal h2{margin:0 0 12px;font-size:1.1rem}
 </style>
 </head>
 <body>
+  <div class="wrap">
+    <h1>Emitir Comprobante <span class="badge">Óptica Cristal</span></h1>
 
-<div id="msg">Listo</div>
-<h1>Emitir Comprobante</h1>
+    <div id="msg">Listo para operar</div>
 
-<div class="card">
-  <div class="row">
-    <div>
-      <label for="vend">Código empleado</label>
-      <input id="vend" placeholder="Poné tu inicial" autocomplete="off"/>
-      <div class="muted">Enter para validar y pasar al código.</div>
-    </div>
-    <div>
-      <label for="codigo">Código</label>
-      <input id="codigo" placeholder="Escaneá o escribí" autocomplete="off"/>
-    </div>
-  </div>
+    <div class="card">
+      <div class="row">
+        <div>
+          <label for="codigo">Código de artículo</label>
+          <input id="codigo" placeholder="Escaneá o escribí" autocomplete="off"/>
+        </div>
+        <div>
+          <label for="precio">Precio total</label>
+          <input id="precio" type="number" step="0.01" inputmode="decimal" value="0"/>
+        </div>
+      </div>
 
-  <label for="descripcion">Descripción</label>
-  <textarea id="descripcion" placeholder="Descripción"></textarea>
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" placeholder="Se completa desde Stock (editable)"></textarea>
 
-  <div class="row">
-    <div>
-      <label for="precio">Precio total</label>
-      <input id="precio" type="number" step="0.01" inputmode="decimal" value="0"/>
-    </div>
-    <div>
       <label for="obs">Observaciones (opcional)</label>
-      <input id="obs" placeholder="Observaciones…"/>
-    </div>
-  </div>
+      <input id="obs" placeholder="Notas…"/>
 
-  <hr/>
+      <hr style="border:0;border-top:1px solid var(--line);margin:16px 0"/>
 
-  <div>
-    <label>Forma de pago</label>
-    <div class="row">
-      <select id="fdp">
-        <option value="">— Elegir —</option>
-        <option>EFECTIVO</option>
-        <option>TARJETA DE DÉBITO</option>
-        <option>TARJETA DE CRÉDITO</option>
-        <option>TRANSFERENCIA</option>
-        <option>PAY WAY</option>
-      </select>
-      <input id="monto" type="number" step="0.01" inputmode="decimal" placeholder="Monto"/>
-    </div>
+      <div>
+        <div class="row">
+          <div>
+            <label for="fdp">Forma de pago (1 medio)</label>
+            <select id="fdp">
+              <option value="">— Elegir —</option>
+              <option>EFECTIVO</option>
+              <option>TARJETA DE DÉBITO</option>
+              <option>TARJETA DE CRÉDITO</option>
+              <option>TRANSFERENCIA</option>
+              <option>PAY WAY</option>
+            </select>
+          </div>
+          <div>
+            <label for="monto">Monto</label>
+            <input id="monto" type="number" step="0.01" inputmode="decimal" placeholder="Monto"/>
+          </div>
+        </div>
 
-    <div style="margin-top:8px">
-      <button id="btn-2medios" type="button">Usar 2 medios de pago</button>
-    </div>
+        <div style="margin-top:10px" class="row">
+          <button id="btn-2medios" type="button" class="secondary">Usar 2 medios de pago</button>
+          <span class="muted" style="align-self:center">Para pagos mixtos (efectivo + tarjeta, etc.)</span>
+        </div>
 
-    <div id="split" class="hidden">
-      <div class="row" style="margin-top:8px">
-        <select id="fdp1">
-          <option value="">— Medio 1 —</option>
-          <option>EFECTIVO</option>
-          <option>TARJETA DE DÉBITO</option>
-          <option>TARJETA DE CRÉDITO</option>
-          <option>TRANSFERENCIA</option>
-          <option>PAY WAY</option>
-        </select>
-        <input id="monto1" type="number" step="0.01" inputmode="decimal" placeholder="Monto 1"/>
+        <div id="split" class="hidden">
+          <div class="row" style="margin-top:10px">
+            <select id="fdp1">
+              <option value="">— Medio 1 —</option>
+              <option>EFECTIVO</option>
+              <option>TARJETA DE DÉBITO</option>
+              <option>TARJETA DE CRÉDITO</option>
+              <option>TRANSFERENCIA</option>
+              <option>PAY WAY</option>
+            </select>
+            <input id="monto1" type="number" step="0.01" inputmode="decimal" placeholder="Monto 1"/>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <select id="fdp2">
+              <option value="">— Medio 2 —</option>
+              <option>EFECTIVO</option>
+              <option>TARJETA DE DÉBITO</option>
+              <option>TARJETA DE CRÉDITO</option>
+              <option>TRANSFERENCIA</option>
+              <option>PAY WAY</option>
+            </select>
+            <input id="monto2" type="number" step="0.01" inputmode="decimal" placeholder="Monto 2"/>
+          </div>
+          <div class="muted" style="margin-top:6px">Los dos montos deben sumar el <b>Precio total</b>.</div>
+        </div>
       </div>
-      <div class="row" style="margin-top:8px">
-        <select id="fdp2">
-          <option value="">— Medio 2 —</option>
-          <option>EFECTIVO</option>
-          <option>TARJETA DE DÉBITO</option>
-          <option>TARJETA DE CRÉDITO</option>
-          <option>TRANSFERENCIA</option>
-          <option>PAY WAY</option>
-        </select>
-        <input id="monto2" type="number" step="0.01" inputmode="decimal" placeholder="Monto 2"/>
+
+      <div class="row" style="margin-top:16px">
+        <button id="btn-registrar" class="blue">Registrar venta</button>
+        <button id="btn-cierre" type="button" class="secondary">Cierre de lote (hoy)</button>
       </div>
-      <div class="muted">Los dos montos deben sumar el <b>Precio total</b>.</div>
     </div>
   </div>
 
-  <div class="row" style="margin-top:12px">
-    <button id="btn-registrar">Registrar venta</button>
-    <button id="btn-cierre" type="button">Cierre de lote (hoy)</button>
+  <!-- MODAL vendedor -->
+  <div id="modal-back" class="modal-back">
+    <div class="modal">
+      <h2>Ingresar empleado</h2>
+      <div class="muted">Escribí tu <b>código</b> (ej.: JU / JI / RO / LU / CA)</div>
+      <input id="vend" placeholder="Código empleado" autocomplete="off" style="margin-top:10px"/>
+      <div class="row" style="margin-top:12px">
+        <button id="btn-vend" class="blue">Entrar</button>
+        <button id="btn-cancel" class="secondary" type="button">Cancelar</button>
+      </div>
+    </div>
   </div>
-</div>
 
 <script>
-/* ====== CONFIG ====== */
-const API = 'https://script.google.com/macros/s/AKfycbyF_tl-DwBa2i-2B7Uh-9naoqHBBbtXc9Xb2ae81ldu3MdAJcpxHHgXRNHG4MlmAffmhA/exec'; // TU /exec
+/* ===== CONFIG ===== */
+const API = 'https://script.google.com/macros/s/AKfycbwii0R7j-VPVSAMi5G1_zyZWUWQelgv_C9Wty50JbxUP81DP8VtmaqvpPpJHi7R0LVbuQ/exec';
+const LS_CODE = 'OC_V_CODE';
+const LS_NAME = 'OC_V_NAME';
 
-/* ====== HELPERS ====== */
+/* ===== SHORTCUTS ===== */
 const $ = s => document.querySelector(s);
-function msg(t, ok=true){ const m=$('#msg'); m.textContent=t; m.style.color=ok?'#111':'#b00020'; }
-function qs(obj){ return Object.entries(obj).map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v??'')}`).join('&'); }
+function msg(t, ok=true){ const m=$('#msg'); m.textContent=t; m.style.color=ok?'#e5e7eb':'#ffb4b4'; }
+function qs(o){ return Object.entries(o).map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v??'')}`).join('&'); }
 function jsonp(url){
   return new Promise((resolve,reject)=>{
     const cb='cb_'+Math.random().toString(36).slice(2);
     window[cb]=(data)=>{ resolve(data); delete window[cb]; s.remove(); };
-    const s=document.createElement('script');
-    s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+    const s=document.createElement('script'); s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
     s.onerror=()=>{ delete window[cb]; s.remove(); reject(new Error('JSONP error')); };
     document.head.appendChild(s);
   });
 }
 
-/* ====== UI FLOW ====== */
-// 1) Foco inicial en empleado
+/* ===== MODAL FLOW ===== */
+function requireVendedor(){
+  $('#modal-back').style.display = 'flex';
+  setTimeout(()=>$('#vend').focus(), 50);
+}
+function setVendedor(code, name){
+  localStorage.setItem(LS_CODE, code);
+  localStorage.setItem(LS_NAME, name);
+  $('#modal-back').style.display = 'none';
+  msg(`Hola ${name||code} 👋  •  Listo para operar`);
+  $('#codigo').focus();
+}
+function forgetVendedor(){
+  localStorage.removeItem(LS_CODE);
+  localStorage.removeItem(LS_NAME);
+}
+
+/* On load */
 document.addEventListener('DOMContentLoaded', ()=>{
-  $('#vend').focus();
+  const c = localStorage.getItem(LS_CODE);
+  const n = localStorage.getItem(LS_NAME);
+  if(c && n){ setVendedor(c,n); } else { requireVendedor(); }
 });
 
-// Enter en empleado ⇒ validar y pasar a código
-$('#vend').addEventListener('keyup', async (e)=>{
-  if(e.key!=='Enter') return;
+/* Validar vendedor */
+async function validarVend(){
   const code = ($('#vend').value||'').trim().toUpperCase();
   if(!code){ msg('Ingresá tu código', false); return; }
   const r = await jsonp(`${API}?action=validarVendedor&code=${encodeURIComponent(code)}`);
-  if(r.ok){
-    msg(`Hola ${r.nombre||r.codigo} 👋`);
-    $('#codigo').focus();
-  }else{
-    msg(r.error||'Código inválido', false);
-  }
-});
+  if(r.ok){ setVendedor(r.codigo, r.nombre||r.codigo); }
+  else { Swal.fire({icon:'error', title:r.error||'Código inválido'}); }
+}
+$('#btn-vend').addEventListener('click', validarVend);
+$('#vend').addEventListener('keyup', e=>{ if(e.key==='Enter') validarVend(); });
+$('#btn-cancel').addEventListener('click', ()=>{ $('#vend').value=''; $('#vend').focus(); });
 
-// 2) Buscar código de artículo con SweetAlert
+/* ===== BUSCAR ARTÍCULO ===== */
 $('#codigo').addEventListener('change', async ()=>{
   const cod = ($('#codigo').value||'').trim();
   if(!cod) return;
@@ -158,9 +199,13 @@ $('#codigo').addEventListener('change', async ()=>{
     if(r.ok){
       $('#descripcion').value = r.descripcion || '';
       $('#precio').value = r.precio || 0;
-      // por comodidad, si vas a 1 medio, proponemos el total en "monto"
-      $('#monto').value = r.precio || 0;
-      Swal.fire({icon:'success', title:'Artículo encontrado', timer:1200, showConfirmButton:false});
+      $('#monto').value = r.precio || 0; // por defecto 1 medio
+      // si está activado split, prellenar M1 con total y M2=0
+      if(!$('#split').classList.contains('hidden')){
+        $('#monto1').value = r.precio || 0;
+        $('#monto2').value = 0;
+      }
+      Swal.fire({icon:'success', title:'Artículo encontrado', timer:1100, showConfirmButton:false});
     }else{
       Swal.fire({icon:'warning', title:r.error||'No encontrado', timer:1500, showConfirmButton:false});
     }
@@ -169,44 +214,60 @@ $('#codigo').addEventListener('change', async ()=>{
   }
 });
 
-// 3) Botón 2 medios
+/* ===== 2 MEDIOS UI ===== */
 $('#btn-2medios').addEventListener('click', ()=>{
   $('#split').classList.toggle('hidden');
+  if(!$('#split').classList.contains('hidden')){
+    const total = Number($('#precio').value||0)||0;
+    $('#monto1').value = total;
+    $('#monto2').value = 0;
+    $('#fdp1').focus();
+  }
 });
 
-/* ====== REGISTRAR VENTA ====== */
+/* Autocompletar el resto */
+function autoFillSplit(){
+  const total = Number($('#precio').value||0)||0;
+  const m1 = Number($('#monto1').value||0)||0;
+  $('#monto2').value = Math.max(total - m1, 0).toFixed(2);
+}
+$('#monto1').addEventListener('input', autoFillSplit);
+$('#precio').addEventListener('input', autoFillSplit);
+
+/* ===== REGISTRAR VENTA ===== */
 $('#btn-registrar').addEventListener('click', async ()=>{
-  const vend = ($('#vend').value||'').trim().toUpperCase();
-  if(!vend){ msg('Ingresá tu código', false); $('#vend').focus(); return; }
+  const vCode = localStorage.getItem(LS_CODE);
+  const vName = localStorage.getItem(LS_NAME);
+  if(!vCode || !vName){ requireVendedor(); return; }
 
   const codigo = ($('#codigo').value||'').trim();
   const descripcion = ($('#descripcion').value||'').trim();
   const precio = Number($('#precio').value||0)||0;
   const obs = ($('#obs').value||'').trim();
 
-  const splitVisible = !$('#split').classList.contains('hidden');
-
+  const split = !$('#split').classList.contains('hidden');
   let url;
-  if (splitVisible){
-    const fdp1 = $('#fdp1').value.trim();
-    const fdp2 = $('#fdp2').value.trim();
+
+  if(split){
+    const f1 = $('#fdp1').value.trim();
+    const f2 = $('#fdp2').value.trim();
     const m1 = Number($('#monto1').value||0)||0;
     const m2 = Number($('#monto2').value||0)||0;
-    if(!fdp1 || !fdp2 || !m1 || !m2){ msg('Completá los dos medios y montos', false); return; }
-    if(precio && m1+m2 !== precio){ msg('Los montos no suman el total', false); return; }
+
+    if(!f1 || !f2 || !m1){ msg('Completá medios y montos', false); return; }
+    if(precio && (m1+m2 !== precio)){ msg('Los montos no suman el total', false); return; }
 
     url = `${API}?action=registrarVenta&` + qs({
-      vendedor: vend, codigo, descripcion, precio,
-      fdp1, monto1:m1, fdp2, monto2:m2, observaciones: obs
+      vendedor: vCode, vendedor_nombre: vName, codigo, descripcion, precio,
+      fdp1: f1, monto1: m1, fdp2: f2, monto2: m2, observaciones: obs
     });
-  } else {
-    const fdp = $('#fdp').value.trim();
-    const monto = Number($('#monto').value||0)||0;
-    if(!fdp || !monto){ msg('Completá forma de pago y monto', false); return; }
-
+  }else{
+    const f = $('#fdp').value.trim();
+    const m = Number($('#monto').value||0)||0;
+    if(!f || !m){ msg('Completá forma de pago y monto', false); return; }
     url = `${API}?action=registrarVenta&` + qs({
-      vendedor: vend, codigo, descripcion, precio,
-      fdp, monto, observaciones: obs
+      vendedor: vCode, vendedor_nombre: vName, codigo, descripcion, precio,
+      fdp: f, monto: m, observaciones: obs
     });
   }
 
@@ -214,14 +275,18 @@ $('#btn-registrar').addEventListener('click', async ()=>{
   try{
     const r = await jsonp(url);
     if(r.ok){
-      Swal.fire({icon:'success', title:'Venta registrada', timer:1200, showConfirmButton:false});
+      Swal.fire({icon:'success', title:'Venta registrada', timer:1100, showConfirmButton:false});
       msg('Venta registrada ✔');
-      // limpiar para la próxima
-      $('#codigo').value=''; $('#descripcion').value=''; $('#monto').value=''; $('#fdp').value='';
+
+      // limpiar venta
+      $('#codigo').value=''; $('#descripcion').value=''; $('#precio').value=0;
+      $('#obs').value=''; $('#monto').value=''; $('#fdp').value='';
       $('#fdp1').value=''; $('#fdp2').value=''; $('#monto1').value=''; $('#monto2').value='';
-      $('#obs').value=''; $('#split').classList.add('hidden');
-      $('#precio').value=0;
-      $('#codigo').focus();
+      $('#split').classList.add('hidden');
+
+      // volver a pedir empleado
+      forgetVendedor();
+      requireVendedor();
     }else{
       Swal.fire({icon:'error', title:'No se pudo registrar', text:r.error||'Error'});
       msg(r.error||'No se pudo registrar', false);
@@ -231,12 +296,12 @@ $('#btn-registrar').addEventListener('click', async ()=>{
   }
 });
 
-/* ====== CIERRE DE LOTE ====== */
+/* ===== CIERRE DE LOTE ===== */
 $('#btn-cierre').addEventListener('click', async ()=>{
   const r = await jsonp(`${API}?action=cierreLote`);
   if(!r.ok){ Swal.fire({icon:'error', title:'Error', text:r.error||'No se pudo calcular'}); return; }
   const tot = r.totales||{};
-  const html = Object.keys(tot).map(k=>`<div><b>${k}</b>: $${tot[k]}</div>`).join('');
+  const html = Object.keys(tot).map(k=>`<div style="margin:4px 0"><b>${k}</b>: $${tot[k]}</div>`).join('');
   Swal.fire({title:`Cierre ${r.dia}`, html: html+`<hr/><b>Total:</b> $${r.total_general}`});
 });
 </script>
