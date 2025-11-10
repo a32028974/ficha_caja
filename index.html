@@ -1,227 +1,244 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Emitir Comprobante • Óptica Cristal</title>
+<link rel="icon" href="logo.png"/>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-  :root{--bg:#f7f7f8;--fg:#111;--muted:#666;--line:#ddd;--btn:#1f2937;--btnH:#374151;}
+  :root{--bg:#f7f7f8;--fg:#111;--muted:#666;--line:#e5e7eb;--btn:#1f2937;--btnH:#374151;}
   body{font-family:Arial, sans-serif;background:var(--bg);color:var(--fg);margin:0;padding:18px}
   h1{margin:0 0 12px;font-size:1.2rem}
-  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
   label{display:block;font-weight:600;margin-top:10px}
-  input,select,textarea,button{width:100%;padding:10px;margin-top:6px;box-sizing:border-box;font-size:16px}
-  textarea{min-height:70px;resize:vertical}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  input,select,button,textarea{width:100%;padding:10px;margin-top:6px;box-sizing:border-box;font-size:16px}
+  textarea{min-height:64px;resize:vertical}
   button{background:var(--btn);color:#fff;border:0;border-radius:8px;cursor:pointer}
   button:hover{background:var(--btnH)}
-  #msg{position:sticky;top:0;margin-bottom:10px;padding:10px;border:1px solid var(--line);background:#fff;border-radius:8px;font-weight:600}
-  /* Modal */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}
-  .modal>.box{background:#fff;border-radius:12px;border:1px solid var(--line);padding:16px;width:min(480px,90vw)}
-  .hide{display:none}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .muted{color:var(--muted);font-size:.9rem}
+  #msg{position:sticky;top:0;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px}
+  .hidden{display:none}
 </style>
 </head>
 <body>
 
 <div id="msg">Listo</div>
-
 <h1>Emitir Comprobante</h1>
 
 <div class="card">
-  <div class="row3">
+  <div class="row">
+    <div>
+      <label for="vend">Código empleado</label>
+      <input id="vend" placeholder="JU / JI / RO / LU / CA" autocomplete="off"/>
+      <div class="muted">Enter para validar y pasar al código.</div>
+    </div>
     <div>
       <label for="codigo">Código</label>
-      <input id="codigo" placeholder="Escaneá o escribí" />
-    </div>
-    <div>
-      <label for="fdp">Forma de pago</label>
-      <select id="fdp">
-        <option value="">— Elegir forma de pago —</option>
-        <option>EFECTIVO</option>
-        <option>TARJETA DE DÉBITO</option>
-        <option>TARJETA DE CRÉDITO</option>
-        <option>TRANSFERENCIA</option>
-        <option>PAY WAY</option>
-      </select>
-    </div>
-    <div>
-      <label for="monto">Precio unitario</label>
-      <input id="monto" type="number" step="0.01" inputmode="decimal" value="0" />
+      <input id="codigo" placeholder="Escaneá o escribí" autocomplete="off"/>
     </div>
   </div>
 
   <label for="descripcion">Descripción</label>
   <textarea id="descripcion" placeholder="Se completa desde Stock (editable)"></textarea>
 
-  <label for="observaciones">Observaciones</label>
-  <input id="observaciones" placeholder="(opcional)" />
-
-  <div class="row" style="margin-top:10px">
-    <button id="btn-registrar">Registrar venta</button>
-    <button id="btn-cierre">Cierre de lote (hoy)</button>
-  </div>
-</div>
-
-<div class="card">
-  <h3>Movimiento de Caja</h3>
-  <div class="row3">
+  <div class="row">
     <div>
-      <label for="tipoMov">Tipo</label>
-      <select id="tipoMov">
-        <option value="">— Seleccionar —</option>
-        <option>Retiro de caja</option>
-        <option>Ingreso de caja</option>
-        <option>Pago prov.</option>
-      </select>
+      <label for="precio">Precio total</label>
+      <input id="precio" type="number" step="0.01" inputmode="decimal" value="0"/>
     </div>
     <div>
-      <label for="montoMov">Monto</label>
-      <input id="montoMov" type="number" step="0.01" inputmode="decimal" />
-    </div>
-    <div>
-      <label for="descMov">Descripción</label>
-      <input id="descMov" placeholder="(opcional)" />
+      <label for="obs">Observaciones (opcional)</label>
+      <input id="obs" placeholder="Notas…"/>
     </div>
   </div>
-  <button id="btn-mov" style="margin-top:10px">Registrar movimiento</button>
-</div>
 
-<!-- Modal ingreso de empleado -->
-<div id="modal" class="modal">
-  <div class="box">
-    <h3>Ingresar empleado</h3>
-    <p>Escribí tu <b>código</b> (viene de tu hoja “Empleados”).</p>
+  <hr/>
+
+  <div>
+    <label>Forma de pago</label>
     <div class="row">
-      <input id="codVend" placeholder="Ej: JU / JI / RO / LU / CA" />
-      <button id="btnLogin">Entrar</button>
+      <select id="fdp">
+        <option value="">— Elegir —</option>
+        <option>EFECTIVO</option>
+        <option>TARJETA DE DÉBITO</option>
+        <option>TARJETA DE CRÉDITO</option>
+        <option>TRANSFERENCIA</option>
+        <option>PAY WAY</option>
+      </select>
+      <input id="monto" type="number" step="0.01" inputmode="decimal" placeholder="Monto"/>
     </div>
+
+    <div style="margin-top:8px">
+      <button id="btn-2medios" type="button">Usar 2 medios de pago</button>
+    </div>
+
+    <div id="split" class="hidden">
+      <div class="row" style="margin-top:8px">
+        <select id="fdp1">
+          <option value="">— Medio 1 —</option>
+          <option>EFECTIVO</option>
+          <option>TARJETA DE DÉBITO</option>
+          <option>TARJETA DE CRÉDITO</option>
+          <option>TRANSFERENCIA</option>
+          <option>PAY WAY</option>
+        </select>
+        <input id="monto1" type="number" step="0.01" inputmode="decimal" placeholder="Monto 1"/>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <select id="fdp2">
+          <option value="">— Medio 2 —</option>
+          <option>EFECTIVO</option>
+          <option>TARJETA DE DÉBITO</option>
+          <option>TARJETA DE CRÉDITO</option>
+          <option>TRANSFERENCIA</option>
+          <option>PAY WAY</option>
+        </select>
+        <input id="monto2" type="number" step="0.01" inputmode="decimal" placeholder="Monto 2"/>
+      </div>
+      <div class="muted">Los dos montos deben sumar el <b>Precio total</b>.</div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:12px">
+    <button id="btn-registrar">Registrar venta</button>
+    <button id="btn-cierre" type="button">Cierre de lote (hoy)</button>
   </div>
 </div>
 
 <script>
 /* ====== CONFIG ====== */
-const API = 'https://script.google.com/macros/s/AKfycbxbAj8y_Py3u0oZi7rfynzK6B-t2B1BTcOTs5drp9cj8CsidreqexI_0X2KkDhQF9b2gw/exec';
-const LS_VCOD = 'VENDEDOR_OC';
-const LS_VNOM = 'VENDEDOR_NOMBRE_OC';
+const API = 'https://script.google.com/macros/s/AKfycbyF_tl-DwBa2i-2B7Uh-9naoqHBBbtXc9Xb2ae81ldu3MdAJcpxHHgXRNHG4MlmAffmhA/exec'; // TU /exec
 
 /* ====== HELPERS ====== */
 const $ = s => document.querySelector(s);
 function msg(t, ok=true){ const m=$('#msg'); m.textContent=t; m.style.color=ok?'#111':'#b00020'; }
 function qs(obj){ return Object.entries(obj).map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v??'')}`).join('&'); }
-
-/* JSONP (evita CORS) */
 function jsonp(url){
   return new Promise((resolve,reject)=>{
-    const cb = 'cb_' + Math.random().toString(36).slice(2);
-    window[cb] = (data)=>{ resolve(data); delete window[cb]; s.remove(); };
-    const s = document.createElement('script');
-    s.src = url + (url.includes('?')?'&':'?') + 'callback=' + cb;
-    s.onerror = ()=>{ delete window[cb]; s.remove(); reject(new Error('JSONP error')); };
+    const cb='cb_'+Math.random().toString(36).slice(2);
+    window[cb]=(data)=>{ resolve(data); delete window[cb]; s.remove(); };
+    const s=document.createElement('script');
+    s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+    s.onerror=()=>{ delete window[cb]; s.remove(); reject(new Error('JSONP error')); };
     document.head.appendChild(s);
   });
 }
 
-/* ====== VENDEDOR ====== */
-function vendedor(){ return (localStorage.getItem(LS_VCOD)||'').toUpperCase(); }
-function setVendedor(cod, nom){ localStorage.setItem(LS_VCOD, cod||''); localStorage.setItem(LS_VNOM, nom||''); }
-async function login(){
-  const code = ($('#codVend').value||'').trim().toUpperCase();
+/* ====== UI FLOW ====== */
+// 1) Foco inicial en empleado
+document.addEventListener('DOMContentLoaded', ()=>{
+  $('#vend').focus();
+});
+
+// Enter en empleado ⇒ validar y pasar a código
+$('#vend').addEventListener('keyup', async (e)=>{
+  if(e.key!=='Enter') return;
+  const code = ($('#vend').value||'').trim().toUpperCase();
   if(!code){ msg('Ingresá tu código', false); return; }
   const r = await jsonp(`${API}?action=validarVendedor&code=${encodeURIComponent(code)}`);
-  if(r.ok){ setVendedor(r.codigo, r.nombre||''); $('#modal').classList.add('hide'); msg(`Hola ${r.nombre||r.codigo} 👋`); $('#codigo').focus(); }
-  else{ msg(r.error||'Código inválido', false); }
-}
-
-/* ====== STOCK / ARTÍCULO ====== */
-async function buscarCodigo(){
-  const cod = ($('#codigo').value||'').trim();
-  if(!cod){ $('#monto').value=0; return; }
-  const r = await jsonp(`${API}?action=getArticulo&codigo=${encodeURIComponent(cod)}`);
-  if (r.ok){
-    $('#descripcion').value = r.descripcion || '';
-    $('#monto').value = r.precio || 0;
-    msg(`OK • ${cod} • $${r.precio||0}`);
-  } else {
-    msg(r.error || 'No encontrado', false);
-    // dejamos campos editables
-  }
-}
-
-/* ====== VENTA ====== */
-async function registrarVenta(){
-  const vend = vendedor();
-  if(!vend){ $('#modal').classList.remove('hide'); msg('Ingresá tu código', false); return; }
-
-  const codigo = ($('#codigo').value||'').trim();       // opcional
-  const fdp    = $('#fdp').value.trim();
-  const monto  = Number($('#monto').value||0)||0;
-  const desc   = ($('#descripcion').value||'').trim();
-  const obs    = ($('#observaciones').value||'').trim();
-
-  if(!fdp){ msg('Elegí forma de pago', false); return; }
-  if(!monto){ msg('Monto inválido', false); return; }
-
-  const url = `${API}?action=registrarVenta&` + qs({
-    vendedor: vend, codigo, fdp, monto, descripcion: desc, observaciones: obs
-  });
-  const r = await jsonp(url);
   if(r.ok){
-    if(r.tipo === 'venta_producto'){
-      msg(`✔ Venta ${r.codigo} • $${r.monto} • marcado vendido`);
-    }else{
-      msg(`✔ Venta genérica • $${r.monto}`);
-    }
-    // limpiar
-    $('#codigo').value=''; $('#descripcion').value=''; $('#monto').value=0; $('#observaciones').value='';
+    msg(`Hola ${r.nombre||r.codigo} 👋`);
     $('#codigo').focus();
   }else{
-    msg(r.error||'No se pudo registrar', false);
+    msg(r.error||'Código inválido', false);
   }
-}
+});
 
-/* ====== MOVIMIENTO DE CAJA ====== */
-async function registrarMovimiento(){
-  const vend = vendedor();
-  if(!vend){ $('#modal').classList.remove('hide'); msg('Ingresá tu código', false); return; }
-  const tipo  = $('#tipoMov').value.trim();
-  const monto = Number($('#montoMov').value||0)||0;
-  const desc  = ($('#descMov').value||'').trim();
-  if(!tipo){ msg('Elegí tipo', false); return; }
-  if(!monto){ msg('Monto inválido', false); return; }
-
-  const url = `${API}?action=movCaja&` + qs({ vendedor: vend, tipo, monto, descripcion: desc });
-  const r = await jsonp(url);
-  if(r.ok){
-    msg(`✔ ${tipo} registrado: $${monto}`);
-    $('#montoMov').value=''; $('#descMov').value=''; $('#tipoMov').value='';
-  }else{
-    msg(r.error||'No se pudo registrar', false);
+// 2) Buscar código de artículo con SweetAlert
+$('#codigo').addEventListener('change', async ()=>{
+  const cod = ($('#codigo').value||'').trim();
+  if(!cod) return;
+  Swal.fire({title:'Buscando código…', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+  try{
+    const r = await jsonp(`${API}?action=getArticulo&codigo=${encodeURIComponent(cod)}`);
+    if(r.ok){
+      $('#descripcion').value = r.descripcion || '';
+      $('#precio').value = r.precio || 0;
+      // por comodidad, si vas a 1 medio, proponemos el total en "monto"
+      $('#monto').value = r.precio || 0;
+      Swal.fire({icon:'success', title:'Artículo encontrado', timer:1200, showConfirmButton:false});
+    }else{
+      Swal.fire({icon:'warning', title:r.error||'No encontrado', timer:1500, showConfirmButton:false});
+    }
+  }catch(err){
+    Swal.fire({icon:'error', title:'Error buscando código', text:String(err)});
   }
-}
+});
 
-/* ====== CIERRE DE LOTE (hoy) ====== */
-async function cierreHoy(){
+// 3) Botón 2 medios
+$('#btn-2medios').addEventListener('click', ()=>{
+  $('#split').classList.toggle('hidden');
+});
+
+/* ====== REGISTRAR VENTA ====== */
+$('#btn-registrar').addEventListener('click', async ()=>{
+  const vend = ($('#vend').value||'').trim().toUpperCase();
+  if(!vend){ msg('Ingresá tu código', false); $('#vend').focus(); return; }
+
+  const codigo = ($('#codigo').value||'').trim();
+  const descripcion = ($('#descripcion').value||'').trim();
+  const precio = Number($('#precio').value||0)||0;
+  const obs = ($('#obs').value||'').trim();
+
+  const splitVisible = !$('#split').classList.contains('hidden');
+
+  let url;
+  if (splitVisible){
+    const fdp1 = $('#fdp1').value.trim();
+    const fdp2 = $('#fdp2').value.trim();
+    const m1 = Number($('#monto1').value||0)||0;
+    const m2 = Number($('#monto2').value||0)||0;
+    if(!fdp1 || !fdp2 || !m1 || !m2){ msg('Completá los dos medios y montos', false); return; }
+    if(precio && m1+m2 !== precio){ msg('Los montos no suman el total', false); return; }
+
+    url = `${API}?action=registrarVenta&` + qs({
+      vendedor: vend, codigo, descripcion, precio,
+      fdp1, monto1:m1, fdp2, monto2:m2, observaciones: obs
+    });
+  } else {
+    const fdp = $('#fdp').value.trim();
+    const monto = Number($('#monto').value||0)||0;
+    if(!fdp || !monto){ msg('Completá forma de pago y monto', false); return; }
+
+    url = `${API}?action=registrarVenta&` + qs({
+      vendedor: vend, codigo, descripcion, precio,
+      fdp, monto, observaciones: obs
+    });
+  }
+
+  Swal.fire({title:'Guardando…', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+  try{
+    const r = await jsonp(url);
+    if(r.ok){
+      Swal.fire({icon:'success', title:'Venta registrada', timer:1200, showConfirmButton:false});
+      msg('Venta registrada ✔');
+      // limpiar para la próxima
+      $('#codigo').value=''; $('#descripcion').value=''; $('#monto').value=''; $('#fdp').value='';
+      $('#fdp1').value=''; $('#fdp2').value=''; $('#monto1').value=''; $('#monto2').value='';
+      $('#obs').value=''; $('#split').classList.add('hidden');
+      $('#precio').value=0;
+      $('#codigo').focus();
+    }else{
+      Swal.fire({icon:'error', title:'No se pudo registrar', text:r.error||'Error'});
+      msg(r.error||'No se pudo registrar', false);
+    }
+  }catch(err){
+    Swal.fire({icon:'error', title:'Error de red', text:String(err)});
+  }
+});
+
+/* ====== CIERRE DE LOTE ====== */
+$('#btn-cierre').addEventListener('click', async ()=>{
   const r = await jsonp(`${API}?action=cierreLote`);
-  if(!r.ok){ msg(r.error||'No se pudo calcular', false); return; }
+  if(!r.ok){ Swal.fire({icon:'error', title:'Error', text:r.error||'No se pudo calcular'}); return; }
   const tot = r.totales||{};
-  const lineas = Object.keys(tot).map(k=>`${k}: $${tot[k]}`).join('\n');
-  alert(`Cierre ${r.dia}\n\n${lineas}\n\nTOTAL: $${r.total_general}`);
-}
-
-/* ====== INIT ====== */
-document.addEventListener('DOMContentLoaded', ()=>{
-  // login
-  if(!vendedor()){ $('#modal').classList.remove('hide'); } else { $('#modal').classList.add('hide'); msg(`Hola ${localStorage.getItem(LS_VNOM)||vendedor()} 👋`); }
-  // eventos
-  $('#btnLogin').addEventListener('click', login);
-  $('#codigo').addEventListener('change', buscarCodigo);
-  $('#btn-registrar').addEventListener('click', registrarVenta);
-  $('#btn-mov').addEventListener('click', registrarMovimiento);
-  $('#btn-cierre').addEventListener('click', cierreHoy);
+  const html = Object.keys(tot).map(k=>`<div><b>${k}</b>: $${tot[k]}</div>`).join('');
+  Swal.fire({title:`Cierre ${r.dia}`, html: html+`<hr/><b>Total:</b> $${r.total_general}`});
 });
 </script>
-
 </body>
 </html>
