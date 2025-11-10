@@ -8,31 +8,32 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
   :root{
-    --bg:#0b1220; --card:#111827; --line:#1f2937; --fg:#e5e7eb; --muted:#94a3b8;
-    --accent:#22c55e; --accent2:#3b82f6; --danger:#ef4444;
+    --bg:#f7fafc; --card:#ffffff; --line:#e5e7eb; --fg:#0f172a; --muted:#64748b;
+    --accent:#2563eb; --accentText:#fff; --soft:#f1f5f9; --ok:#16a34a; --warn:#f59e0b;
   }
   html,body{height:100%}
-  body{margin:0;background:linear-gradient(180deg,#0b1220,#0e1424);color:var(--fg);font-family:system-ui,Arial}
-  .wrap{max-width:920px;margin:20px auto;padding:0 14px}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,Arial}
+  .wrap{max-width:920px;margin:22px auto;padding:0 14px}
   h1{font-size:1.25rem;margin:0 0 12px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-  label{display:block;font-weight:600;margin-top:10px}
-  input,select,button,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0b1324;color:var(--fg);font-size:16px}
-  input::placeholder{color:#6b7280}
-  textarea{min-height:70px;resize:vertical}
-  button{cursor:pointer;border:0;background:var(--accent);color:#051016;font-weight:700}
-  button.secondary{background:#1f2937;color:#e5e7eb;border:1px solid var(--line)}
-  button.blue{background:var(--accent2);color:#041019}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 8px 26px rgba(2,6,23,.06)}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  label{display:block;font-weight:600;margin-top:10px}
+  input,select,button,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--fg);font-size:16px}
+  input::placeholder{color:#9aa3af}
+  textarea{min-height:70px;resize:vertical;background:#fff}
+  button{cursor:pointer;border:0;background:var(--accent);color:var(--accentText);font-weight:700}
+  button.secondary{background:#f8fafc;color:#0f172a;border:1px solid var(--line)}
+  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--soft);border:1px solid var(--line);font-size:.85rem}
+  #msg{margin:10px 0;padding:10px;border-radius:10px;background:var(--soft);border:1px dashed var(--line)}
   .muted{color:var(--muted);font-size:.9rem}
-  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#0b1324;border:1px solid var(--line);font-size:.85rem}
-  #msg{margin:10px 0;padding:10px;border-radius:10px;background:#0b1324;border:1px dashed var(--line)}
+  .history{margin-top:16px}
+  .item{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+  .item small{color:var(--muted)}
   .hidden{display:none}
 
   /* Modal vendedor */
-  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:40}
-  .modal{background:#0f172a;border:1px solid var(--line);border-radius:16px;padding:20px;width:min(420px,92vw);box-shadow:0 20px 70px rgba(0,0,0,.45)}
+  .modal-back{position:fixed;inset:0;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;z-index:40}
+  .modal{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;width:min(420px,92vw);box-shadow:0 22px 60px rgba(2,6,23,.15)}
   .modal h2{margin:0 0 12px;font-size:1.1rem}
 </style>
 </head>
@@ -40,7 +41,7 @@
   <div class="wrap">
     <h1>Emitir Comprobante <span class="badge">Óptica Cristal</span></h1>
 
-    <div id="msg">Listo para operar</div>
+    <div id="msg">Completá forma de pago y monto</div>
 
     <div class="card">
       <div class="row">
@@ -62,60 +63,32 @@
 
       <hr style="border:0;border-top:1px solid var(--line);margin:16px 0"/>
 
-      <div>
-        <div class="row">
-          <div>
-            <label for="fdp">Forma de pago (1 medio)</label>
-            <select id="fdp">
-              <option value="">— Elegir —</option>
-              <option>EFECTIVO</option>
-              <option>TARJETA DE DÉBITO</option>
-              <option>TARJETA DE CRÉDITO</option>
-              <option>TRANSFERENCIA</option>
-              <option>PAY WAY</option>
-            </select>
-          </div>
-          <div>
-            <label for="monto">Monto</label>
-            <input id="monto" type="number" step="0.01" inputmode="decimal" placeholder="Monto"/>
-          </div>
+      <div class="row">
+        <div>
+          <label for="fdp">Forma de pago</label>
+          <select id="fdp">
+            <option value="">— Elegir —</option>
+            <option>EFECTIVO</option>
+            <option>TARJETA DE DÉBITO</option>
+            <option>TARJETA DE CRÉDITO</option>
+            <option>TRANSFERENCIA</option>
+            <option>PAY WAY</option>
+          </select>
+          <div class="muted" style="margin-top:6px">Se usará el <b>Precio total</b> como monto.</div>
         </div>
-
-        <div style="margin-top:10px" class="row">
-          <button id="btn-2medios" type="button" class="secondary">Usar 2 medios de pago</button>
-          <span class="muted" style="align-self:center">Para pagos mixtos (efectivo + tarjeta, etc.)</span>
-        </div>
-
-        <div id="split" class="hidden">
-          <div class="row" style="margin-top:10px">
-            <select id="fdp1">
-              <option value="">— Medio 1 —</option>
-              <option>EFECTIVO</option>
-              <option>TARJETA DE DÉBITO</option>
-              <option>TARJETA DE CRÉDITO</option>
-              <option>TRANSFERENCIA</option>
-              <option>PAY WAY</option>
-            </select>
-            <input id="monto1" type="number" step="0.01" inputmode="decimal" placeholder="Monto 1"/>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <select id="fdp2">
-              <option value="">— Medio 2 —</option>
-              <option>EFECTIVO</option>
-              <option>TARJETA DE DÉBITO</option>
-              <option>TARJETA DE CRÉDITO</option>
-              <option>TRANSFERENCIA</option>
-              <option>PAY WAY</option>
-            </select>
-            <input id="monto2" type="number" step="0.01" inputmode="decimal" placeholder="Monto 2"/>
-          </div>
-          <div class="muted" style="margin-top:6px">Los dos montos deben sumar el <b>Precio total</b>.</div>
+        <div style="display:flex;align-items:end">
+          <button id="btn-registrar" class="secondary" style="width:100%;height:48px;border-width:2px;border-color:#c7d2fe;background:#eef2ff;color:#1e3a8a">Registrar venta</button>
         </div>
       </div>
 
-      <div class="row" style="margin-top:16px">
-        <button id="btn-registrar" class="blue">Registrar venta</button>
+      <div class="row" style="margin-top:12px">
         <button id="btn-cierre" type="button" class="secondary">Cierre de lote (hoy)</button>
+        <span class="muted" style="align-self:center">Tip: Enter en código busca al instante.</span>
+      </div>
+
+      <div class="history">
+        <div class="muted" style="margin:6px 0 8px">Últimas 5 ventas</div>
+        <div id="hist"></div>
       </div>
     </div>
   </div>
@@ -127,7 +100,7 @@
       <div class="muted">Escribí tu <b>código</b> (ej.: JU / JI / RO / LU / CA)</div>
       <input id="vend" placeholder="Código empleado" autocomplete="off" style="margin-top:10px"/>
       <div class="row" style="margin-top:12px">
-        <button id="btn-vend" class="blue">Entrar</button>
+        <button id="btn-vend" style="background:var(--accent);color:#fff">Entrar</button>
         <button id="btn-cancel" class="secondary" type="button">Cancelar</button>
       </div>
     </div>
@@ -135,13 +108,13 @@
 
 <script>
 /* ===== CONFIG ===== */
-const API = 'https://script.google.com/macros/s/AKfycbwii0R7j-VPVSAMi5G1_zyZWUWQelgv_C9Wty50JbxUP81DP8VtmaqvpPpJHi7R0LVbuQ/exec';
+const API = 'https://script.google.com/macros/s/AKfycbyF_tl-DwBa2i-2B7Uh-9naoqHBBbtXc9Xb2ae81ldu3MdAJcpxHHgXRNHG4MlmAffmhA/exec';
 const LS_CODE = 'OC_V_CODE';
 const LS_NAME = 'OC_V_NAME';
 
 /* ===== SHORTCUTS ===== */
 const $ = s => document.querySelector(s);
-function msg(t, ok=true){ const m=$('#msg'); m.textContent=t; m.style.color=ok?'#e5e7eb':'#ffb4b4'; }
+function msg(t, ok=true){ const m=$('#msg'); m.textContent=t; m.style.color=ok?'#0f172a':'#b91c1c'; }
 function qs(o){ return Object.entries(o).map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v??'')}`).join('&'); }
 function jsonp(url){
   return new Promise((resolve,reject)=>{
@@ -156,6 +129,7 @@ function jsonp(url){
 /* ===== MODAL FLOW ===== */
 function requireVendedor(){
   $('#modal-back').style.display = 'flex';
+  $('#vend').value='';
   setTimeout(()=>$('#vend').focus(), 50);
 }
 function setVendedor(code, name){
@@ -171,10 +145,11 @@ function forgetVendedor(){
 }
 
 /* On load */
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
   const c = localStorage.getItem(LS_CODE);
   const n = localStorage.getItem(LS_NAME);
   if(c && n){ setVendedor(c,n); } else { requireVendedor(); }
+  await cargarHistorial();
 });
 
 /* Validar vendedor */
@@ -189,8 +164,8 @@ $('#btn-vend').addEventListener('click', validarVend);
 $('#vend').addEventListener('keyup', e=>{ if(e.key==='Enter') validarVend(); });
 $('#btn-cancel').addEventListener('click', ()=>{ $('#vend').value=''; $('#vend').focus(); });
 
-/* ===== BUSCAR ARTÍCULO ===== */
-$('#codigo').addEventListener('change', async ()=>{
+/* ===== BUSCAR ARTÍCULO (Enter en código) ===== */
+async function buscarArticulo(){
   const cod = ($('#codigo').value||'').trim();
   if(!cod) return;
   Swal.fire({title:'Buscando código…', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
@@ -199,40 +174,15 @@ $('#codigo').addEventListener('change', async ()=>{
     if(r.ok){
       $('#descripcion').value = r.descripcion || '';
       $('#precio').value = r.precio || 0;
-      $('#monto').value = r.precio || 0; // por defecto 1 medio
-      // si está activado split, prellenar M1 con total y M2=0
-      if(!$('#split').classList.contains('hidden')){
-        $('#monto1').value = r.precio || 0;
-        $('#monto2').value = 0;
-      }
-      Swal.fire({icon:'success', title:'Artículo encontrado', timer:1100, showConfirmButton:false});
+      Swal.fire({icon:'success', title:'Artículo encontrado', timer:950, showConfirmButton:false});
     }else{
-      Swal.fire({icon:'warning', title:r.error||'No encontrado', timer:1500, showConfirmButton:false});
+      Swal.fire({icon:'warning', title:r.error||'No encontrado', timer:1400, showConfirmButton:false});
     }
   }catch(err){
     Swal.fire({icon:'error', title:'Error buscando código', text:String(err)});
   }
-});
-
-/* ===== 2 MEDIOS UI ===== */
-$('#btn-2medios').addEventListener('click', ()=>{
-  $('#split').classList.toggle('hidden');
-  if(!$('#split').classList.contains('hidden')){
-    const total = Number($('#precio').value||0)||0;
-    $('#monto1').value = total;
-    $('#monto2').value = 0;
-    $('#fdp1').focus();
-  }
-});
-
-/* Autocompletar el resto */
-function autoFillSplit(){
-  const total = Number($('#precio').value||0)||0;
-  const m1 = Number($('#monto1').value||0)||0;
-  $('#monto2').value = Math.max(total - m1, 0).toFixed(2);
 }
-$('#monto1').addEventListener('input', autoFillSplit);
-$('#precio').addEventListener('input', autoFillSplit);
+$('#codigo').addEventListener('keyup', e=>{ if(e.key==='Enter') buscarArticulo(); });
 
 /* ===== REGISTRAR VENTA ===== */
 $('#btn-registrar').addEventListener('click', async ()=>{
@@ -244,32 +194,14 @@ $('#btn-registrar').addEventListener('click', async ()=>{
   const descripcion = ($('#descripcion').value||'').trim();
   const precio = Number($('#precio').value||0)||0;
   const obs = ($('#obs').value||'').trim();
+  const fdp = $('#fdp').value.trim();
 
-  const split = !$('#split').classList.contains('hidden');
-  let url;
+  if(!fdp){ msg('Elegí forma de pago', false); return; }
+  if(!precio){ msg('Ingresá un monto válido', false); return; }
 
-  if(split){
-    const f1 = $('#fdp1').value.trim();
-    const f2 = $('#fdp2').value.trim();
-    const m1 = Number($('#monto1').value||0)||0;
-    const m2 = Number($('#monto2').value||0)||0;
-
-    if(!f1 || !f2 || !m1){ msg('Completá medios y montos', false); return; }
-    if(precio && (m1+m2 !== precio)){ msg('Los montos no suman el total', false); return; }
-
-    url = `${API}?action=registrarVenta&` + qs({
-      vendedor: vCode, vendedor_nombre: vName, codigo, descripcion, precio,
-      fdp1: f1, monto1: m1, fdp2: f2, monto2: m2, observaciones: obs
-    });
-  }else{
-    const f = $('#fdp').value.trim();
-    const m = Number($('#monto').value||0)||0;
-    if(!f || !m){ msg('Completá forma de pago y monto', false); return; }
-    url = `${API}?action=registrarVenta&` + qs({
-      vendedor: vCode, vendedor_nombre: vName, codigo, descripcion, precio,
-      fdp: f, monto: m, observaciones: obs
-    });
-  }
+  const url = `${API}?action=registrarVenta&` + qs({
+    vendedor: vCode, vendedor_nombre: vName, codigo, descripcion, precio, fdp, observaciones: obs
+  });
 
   Swal.fire({title:'Guardando…', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
   try{
@@ -280,13 +212,14 @@ $('#btn-registrar').addEventListener('click', async ()=>{
 
       // limpiar venta
       $('#codigo').value=''; $('#descripcion').value=''; $('#precio').value=0;
-      $('#obs').value=''; $('#monto').value=''; $('#fdp').value='';
-      $('#fdp1').value=''; $('#fdp2').value=''; $('#monto1').value=''; $('#monto2').value='';
-      $('#split').classList.add('hidden');
+      $('#obs').value=''; $('#fdp').value='';
 
-      // volver a pedir empleado
+      // volver a pedir empleado (sin inicial guardada)
       forgetVendedor();
       requireVendedor();
+
+      // refrescar historial
+      await cargarHistorial();
     }else{
       Swal.fire({icon:'error', title:'No se pudo registrar', text:r.error||'Error'});
       msg(r.error||'No se pudo registrar', false);
@@ -304,6 +237,30 @@ $('#btn-cierre').addEventListener('click', async ()=>{
   const html = Object.keys(tot).map(k=>`<div style="margin:4px 0"><b>${k}</b>: $${tot[k]}</div>`).join('');
   Swal.fire({title:`Cierre ${r.dia}`, html: html+`<hr/><b>Total:</b> $${r.total_general}`});
 });
+
+/* ===== HISTORIAL (últimas 5) ===== */
+async function cargarHistorial(){
+  try{
+    const r = await jsonp(`${API}?action=ultimasVentas`);
+    if(!r.ok) return;
+    const cont = $('#hist'); cont.innerHTML='';
+    (r.items||[]).forEach(v=>{
+      const el = document.createElement('div');
+      el.className='item';
+      el.innerHTML = `
+        <div>
+          <div><b>$${v.monto}</b> • ${v.fdp}</div>
+          <small>${v.descripcion}</small>
+        </div>
+        <div style="text-align:right">
+          <small>${v.fecha}</small><br/>
+          <small>${v.empleado}</small>
+        </div>`;
+      cont.appendChild(el);
+    });
+    if((r.items||[]).length===0){ cont.innerHTML='<div class="muted">Sin ventas recientes</div>'; }
+  }catch(_){ /* ignore */ }
+}
 </script>
 </body>
 </html>
