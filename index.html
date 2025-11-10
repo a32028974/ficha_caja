@@ -9,7 +9,7 @@
 <style>
   :root{
     --bg:#f7fafc; --card:#ffffff; --line:#e5e7eb; --fg:#0f172a; --muted:#64748b;
-    --accent:#2563eb; --accentText:#fff; --soft:#f1f5f9; --ok:#16a34a; --warn:#f59e0b;
+    --accent:#2563eb; --accentText:#fff; --soft:#f1f5f9;
   }
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,Arial}
@@ -19,19 +19,14 @@
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   label{display:block;font-weight:600;margin-top:10px}
   input,select,button,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--fg);font-size:16px}
-  input::placeholder{color:#9aa3af}
-  textarea{min-height:70px;resize:vertical;background:#fff}
+  textarea{min-height:70px;resize:vertical}
   button{cursor:pointer;border:0;background:var(--accent);color:var(--accentText);font-weight:700}
   button.secondary{background:#f8fafc;color:#0f172a;border:1px solid var(--line)}
   .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--soft);border:1px solid var(--line);font-size:.85rem}
   #msg{margin:10px 0;padding:10px;border-radius:10px;background:var(--soft);border:1px dashed var(--line)}
   .muted{color:var(--muted);font-size:.9rem}
-  .history{margin-top:16px}
   .item{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
-  .item small{color:var(--muted)}
-  .hidden{display:none}
-
-  /* Modal vendedor */
+  .history{margin-top:16px}
   .modal-back{position:fixed;inset:0;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;z-index:40}
   .modal{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;width:min(420px,92vw);box-shadow:0 22px 60px rgba(2,6,23,.15)}
   .modal h2{margin:0 0 12px;font-size:1.1rem}
@@ -41,13 +36,14 @@
   <div class="wrap">
     <h1>Emitir Comprobante <span class="badge">Óptica Cristal</span></h1>
 
-    <div id="msg">Completá forma de pago y monto</div>
+    <div id="msg">Completá rubro, forma de pago y monto</div>
 
     <div class="card">
       <div class="row">
         <div>
           <label for="codigo">Código de artículo</label>
           <input id="codigo" placeholder="Escaneá o escribí" autocomplete="off"/>
+          <div class="muted" style="margin-top:6px">Enter o salir del campo ⇒ busca en Stock</div>
         </div>
         <div>
           <label for="precio">Precio total</label>
@@ -55,15 +51,19 @@
         </div>
       </div>
 
-      <label for="descripcion">Descripción</label>
-      <textarea id="descripcion" placeholder="Se completa desde Stock (editable)"></textarea>
-
-      <label for="obs">Observaciones (opcional)</label>
-      <input id="obs" placeholder="Notas…"/>
-
-      <hr style="border:0;border-top:1px solid var(--line);margin:16px 0"/>
-
       <div class="row">
+        <div>
+          <label for="rubro">Categoría</label>
+          <select id="rubro">
+            <option value="">— Elegir —</option>
+            <option>RECETA</option>
+            <option>ANT DE SOL</option>
+            <option>LENTES DE CONTACTO</option>
+            <option>LIQUIDOS PARA LC</option>
+            <option>FOTOS Y PILAS</option>
+            <option>VARIOS Y REPARACIONES</option>
+          </select>
+        </div>
         <div>
           <label for="fdp">Forma de pago</label>
           <select id="fdp">
@@ -74,16 +74,20 @@
             <option>TRANSFERENCIA</option>
             <option>PAY WAY</option>
           </select>
-          <div class="muted" style="margin-top:6px">Se usará el <b>Precio total</b> como monto.</div>
-        </div>
-        <div style="display:flex;align-items:end">
-          <button id="btn-registrar" class="secondary" style="width:100%;height:48px;border-width:2px;border-color:#c7d2fe;background:#eef2ff;color:#1e3a8a">Registrar venta</button>
         </div>
       </div>
 
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" placeholder="Se completa desde Stock (editable)"></textarea>
+
+      <label for="obs">Observaciones (opcional)</label>
+      <input id="obs" placeholder="Notas…"/>
+
       <div class="row" style="margin-top:12px">
+        <button id="btn-registrar" class="secondary" style="height:48px;border-width:2px;border-color:#c7d2fe;background:#eef2ff;color:#1e3a8a">
+          Registrar venta (F9)
+        </button>
         <button id="btn-cierre" type="button" class="secondary">Cierre de lote (hoy)</button>
-        <span class="muted" style="align-self:center">Tip: Enter en código busca al instante.</span>
       </div>
 
       <div class="history">
@@ -100,7 +104,7 @@
       <div class="muted">Escribí tu <b>código</b> (ej.: JU / JI / RO / LU / CA)</div>
       <input id="vend" placeholder="Código empleado" autocomplete="off" style="margin-top:10px"/>
       <div class="row" style="margin-top:12px">
-        <button id="btn-vend" style="background:var(--accent);color:#fff">Entrar</button>
+        <button id="btn-vend" style="background:#2563eb;color:#fff">Entrar</button>
         <button id="btn-cancel" class="secondary" type="button">Cancelar</button>
       </div>
     </div>
@@ -108,11 +112,11 @@
 
 <script>
 /* ===== CONFIG ===== */
-const API = 'https://script.google.com/macros/s/AKfycbyF_tl-DwBa2i-2B7Uh-9naoqHBBbtXc9Xb2ae81ldu3MdAJcpxHHgXRNHG4MlmAffmhA/exec';
+const API = 'https://script.google.com/macros/s/AKfycby9lsUaLjS0YIMHkaBWNGauyVPWo7d5lrGiKvZkqHaz8hwqaXzWxvtVrNhVkHAxkP-y/exec';
 const LS_CODE = 'OC_V_CODE';
 const LS_NAME = 'OC_V_NAME';
 
-/* ===== SHORTCUTS ===== */
+/* ===== UTILS ===== */
 const $ = s => document.querySelector(s);
 function msg(t, ok=true){ const m=$('#msg'); m.textContent=t; m.style.color=ok?'#0f172a':'#b91c1c'; }
 function qs(o){ return Object.entries(o).map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v??'')}`).join('&'); }
@@ -126,7 +130,7 @@ function jsonp(url){
   });
 }
 
-/* ===== MODAL FLOW ===== */
+/* ===== MODAL vendedor ===== */
 function requireVendedor(){
   $('#modal-back').style.display = 'flex';
   $('#vend').value='';
@@ -139,12 +143,8 @@ function setVendedor(code, name){
   msg(`Hola ${name||code} 👋  •  Listo para operar`);
   $('#codigo').focus();
 }
-function forgetVendedor(){
-  localStorage.removeItem(LS_CODE);
-  localStorage.removeItem(LS_NAME);
-}
+function forgetVendedor(){ localStorage.removeItem(LS_CODE); localStorage.removeItem(LS_NAME); }
 
-/* On load */
 document.addEventListener('DOMContentLoaded', async ()=>{
   const c = localStorage.getItem(LS_CODE);
   const n = localStorage.getItem(LS_NAME);
@@ -161,10 +161,10 @@ async function validarVend(){
   else { Swal.fire({icon:'error', title:r.error||'Código inválido'}); }
 }
 $('#btn-vend').addEventListener('click', validarVend);
-$('#vend').addEventListener('keyup', e=>{ if(e.key==='Enter') validarVend(); });
+$('#vend').addEventListener('keydown', e=>{ if(e.key==='Enter') validarVend(); });
 $('#btn-cancel').addEventListener('click', ()=>{ $('#vend').value=''; $('#vend').focus(); });
 
-/* ===== BUSCAR ARTÍCULO (Enter en código) ===== */
+/* ===== BUSCAR ARTÍCULO ===== */
 async function buscarArticulo(){
   const cod = ($('#codigo').value||'').trim();
   if(!cod) return;
@@ -182,7 +182,18 @@ async function buscarArticulo(){
     Swal.fire({icon:'error', title:'Error buscando código', text:String(err)});
   }
 }
-$('#codigo').addEventListener('keyup', e=>{ if(e.key==='Enter') buscarArticulo(); });
+// Enter en código = busca; NO guarda
+$('#codigo').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); buscarArticulo(); } });
+$('#codigo').addEventListener('blur', buscarArticulo);
+
+/* ===== BLOQUEAR ENTER GLOBAL (no guardar) ===== */
+// Evita submit accidental por pistolita; salvo en modal vendedor
+document.addEventListener('keydown', e=>{
+  const inVend = document.activeElement === $('#vend') || $('#modal-back').style.display==='flex';
+  if(!inVend && e.key === 'Enter'){ e.preventDefault(); }
+  // F9 = registrar venta
+  if(e.key === 'F9'){ e.preventDefault(); $('#btn-registrar').click(); }
+});
 
 /* ===== REGISTRAR VENTA ===== */
 $('#btn-registrar').addEventListener('click', async ()=>{
@@ -191,16 +202,18 @@ $('#btn-registrar').addEventListener('click', async ()=>{
   if(!vCode || !vName){ requireVendedor(); return; }
 
   const codigo = ($('#codigo').value||'').trim();
+  const rubro  = ($('#rubro').value||'').trim();
   const descripcion = ($('#descripcion').value||'').trim();
   const precio = Number($('#precio').value||0)||0;
   const obs = ($('#obs').value||'').trim();
   const fdp = $('#fdp').value.trim();
 
   if(!fdp){ msg('Elegí forma de pago', false); return; }
+  if(!rubro){ msg('Elegí la categoría', false); return; }
   if(!precio){ msg('Ingresá un monto válido', false); return; }
 
   const url = `${API}?action=registrarVenta&` + qs({
-    vendedor: vCode, vendedor_nombre: vName, codigo, descripcion, precio, fdp, observaciones: obs
+    vendedor: vCode, vendedor_nombre: vName, codigo, rubro, descripcion, precio, fdp, observaciones: obs
   });
 
   Swal.fire({title:'Guardando…', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
@@ -212,13 +225,12 @@ $('#btn-registrar').addEventListener('click', async ()=>{
 
       // limpiar venta
       $('#codigo').value=''; $('#descripcion').value=''; $('#precio').value=0;
-      $('#obs').value=''; $('#fdp').value='';
+      $('#obs').value=''; $('#fdp').value=''; $('#rubro').value='';
 
-      // volver a pedir empleado (sin inicial guardada)
+      // volver a pedir empleado
       forgetVendedor();
       requireVendedor();
 
-      // refrescar historial
       await cargarHistorial();
     }else{
       Swal.fire({icon:'error', title:'No se pudo registrar', text:r.error||'Error'});
@@ -238,19 +250,18 @@ $('#btn-cierre').addEventListener('click', async ()=>{
   Swal.fire({title:`Cierre ${r.dia}`, html: html+`<hr/><b>Total:</b> $${r.total_general}`});
 });
 
-/* ===== HISTORIAL (últimas 5) ===== */
+/* ===== HISTORIAL ===== */
 async function cargarHistorial(){
   try{
     const r = await jsonp(`${API}?action=ultimasVentas`);
     if(!r.ok) return;
     const cont = $('#hist'); cont.innerHTML='';
     (r.items||[]).forEach(v=>{
-      const el = document.createElement('div');
-      el.className='item';
+      const el = document.createElement('div'); el.className='item';
       el.innerHTML = `
         <div>
           <div><b>$${v.monto}</b> • ${v.fdp}</div>
-          <small>${v.descripcion}</small>
+          <small class="muted">${v.descripcion}</small>
         </div>
         <div style="text-align:right">
           <small>${v.fecha}</small><br/>
