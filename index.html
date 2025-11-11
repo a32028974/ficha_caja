@@ -34,7 +34,7 @@ input, select{ width:100%; padding:10px 12px; border:1px solid #d1d5db; border-r
 
 <header>
 <img src="logo.png" alt="Óptica Cristal">
-<div class="title">Emitir Comprobante v6 </div>
+<div class="title">Emitir Comprobante v7 </div>
 <div class="badge">📅 <span id="hoy"></span></div>
 <div class="badge">👤 <b id="empName">—</b></div>
 <button class="btn" id="btnCambiar">Cambiar empleado</button>
@@ -48,61 +48,85 @@ input, select{ width:100%; padding:10px 12px; border:1px solid #d1d5db; border-r
 </section>
 
 <section class="card">
-<h3>Conceptos a facturar</h3>
+  <h3>Conceptos a facturar</h3>
 
-<div class="rowTop">
-<div>
-<label>Código</label>
-<input id="inpCodigo" placeholder="Escaneá o escribí y Tab/Enter">
-</div>
-<div>
-<label>Descripción</label>
-<input id="inpDesc" placeholder="Se completa desde Stock (editable)">
-</div>
-</div>
+  <!-- Fila 1: Código + Descripción -->
+  <div class="rowTop">
+    <div>
+      <label>Código</label>
+      <input id="inpCodigo" placeholder="Escaneá o escribí y Enter">
+    </div>
+    <div>
+      <label>Descripción</label>
+      <input id="inpDesc" placeholder="Se completa desde Stock (editable)">
+    </div>
+  </div>
 
-<div class="rowBottom" style="margin-top:10px">
-<div>
-<label>Rubro (obligatorio)</label>
-<select id="inpRubro" required>
-<option value="">— Elegir rubro —</option>
-<option>Receta</option>
-<option>Lentes de contacto</option>
-<option>Líquidos LC</option>
-<option>Reparaciones y varios</option>
-<option>Sol</option>
-<option>Fotos y pilas</option>
-</select>
-</div>
-<div>
-<label>Precio Unit.</label>
-<input type="number" id="inpUnit" inputmode="decimal" placeholder="0">
-</div>
-<div>
-<label>Forma de pago</label>
-<select id="fdp" required>
-<option value="">— Elegir forma de pago —</option>
-<option>EFECTIVO</option>
-<option>MERCADOPAGO</option>
-<option>TRANSFERENCIA</option>
-<option>TARJETA DE CRÉDITO</option>
-<option>TARJETA DE DEBITO</option>
-<option>LINK DE PAGO</option>
-</select>
-</div>
-<div>
-<label style="visibility:hidden">—</label>
-<button class="btn blue" id="btnAgregar">Registrar venta</button>
-</div>
-</div>
+  <!-- Fila 2: Rubro + Precio + FDP 1 + Registrar -->
+  <div class="rowBottom" style="margin-top:10px">
+    <div>
+      <label>Rubro</label>
+      <select id="inpRubro" required>
+        <option value="">— Elegir rubro —</option>
+        <option>Receta</option>
+        <option>Lentes de contacto</option>
+        <option>Líquidos LC</option>
+        <option>Reparaciones y varios</option>
+        <option>Sol</option>
+        <option>Fotos y pilas</option>
+      </select>
+    </div>
+    <div>
+      <label>Precio Unit.</label>
+      <input type="number" id="inpUnit" inputmode="decimal" placeholder="0">
+    </div>
+    <div>
+      <label>Forma de pago</label>
+      <select id="fdp1" required>
+        <option value="">— Elegir forma —</option>
+        <option>EFECTIVO</option>
+        <option>MERCADOPAGO</option>
+        <option>TRANSFERENCIA</option>
+        <option>TARJETA DE CRÉDITO</option>
+        <option>TARJETA DE DEBITO</option>
+        <option>LINK DE PAGO</option>
+      </select>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button class="btn blue" id="btnAgregar">Registrar venta</button>
+      <button class="btn" id="btnToggleMedios">2 medios</button>
+    </div>
+  </div>
 
-<div style="margin-top:10px">
-<label>Observaciones</label>
-<input id="obs" placeholder="">
-</div>
+  <!-- MODO 2 MEDIOS -->
+  <div id="medios2" class="hidden" style="margin-top:12px; border-top:1px solid #ddd; padding-top:12px;">
 
-<div id="msgLinea" class="muted" style="margin-top:8px"></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div>
+        <label>Forma de pago 2</label>
+        <select id="fdp2">
+          <option value="">— Elegir forma —</option>
+          <option>EFECTIVO</option>
+          <option>MERCADOPAGO</option>
+          <option>TRANSFERENCIA</option>
+          <option>TARJETA DE CRÉDITO</option>
+          <option>TARJETA DE DEBITO</option>
+          <option>LINK DE PAGO</option>
+        </select>
+      </div>
+      <div>
+        <label>Monto 2 (auto)</label>
+        <input type="number" id="monto2" inputmode="decimal" placeholder="0">
+      </div>
+    </div>
+  </div>
 
+  <div style="margin-top:10px">
+    <label>Observaciones</label>
+    <input id="obs" placeholder="">
+  </div>
+
+  <div id="msgLinea" class="muted" style="margin-top:8px"></div>
 </section>
 
 <section class="card">
@@ -190,7 +214,27 @@ if(!desc || unit<=0){ Swal.fire('Faltan datos','','warning'); return; }
 const descFinal = `${rubro}: ${desc}`.trim();
 
 Swal.fire({title:'Guardando…',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
-const res = await apiPost({ action:'venta_add', empleadoCodigo: emp.codigo, fdp, monto: unit, numItem: codigo, precioItem: unit, descripcion: descFinal, obs });
+let payload = {
+  action:'venta_add',
+  empleadoCodigo: emp.codigo,
+  numItem: codigo,
+  precioItem: unit,
+  descripcion: descFinal,
+  obs
+};
+
+if (modo2Medios) {
+  payload.pagos = [
+    { fdp: qs('#fdp1').value, monto: Number(qs('#monto2').value) },
+    { fdp: qs('#fdp2').value, monto: Number(qs('#inpUnit').value) - Number(qs('#monto2').value) }
+  ];
+} else {
+  payload.fdp = qs('#fdp1').value;
+  payload.monto = unit;
+}
+
+const res = await apiPost(payload);
+
 Swal.close();
 
 if(res.ok){
@@ -218,6 +262,27 @@ qs('#loginMsg').textContent='Código inválido';
 }
 }
 
+let modo2Medios = false;
+
+qs('#btnToggleMedios').onclick = () => {
+  modo2Medios = !modo2Medios;
+  qs('#medios2').classList.toggle('hidden', !modo2Medios);
+  qs('#btnToggleMedios').textContent = modo2Medios ? '1 medio' : '2 medios';
+  if (modo2Medios) {
+    calcularSaldo();
+  }
+};
+
+function calcularSaldo() {
+  const total = Number(qs('#inpUnit').value || 0);
+  const p1 = Number(qs('#monto2').value || 0);
+  qs('#monto2').value = Math.max(total - p1, 0);
+}
+
+qs('#inpUnit').addEventListener('input', calcularSaldo);
+qs('#monto2').addEventListener('input', calcularSaldo);
+
+  
 function init(){
 const d=new Date();
 qs('#hoy').textContent=d.toLocaleDateString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
