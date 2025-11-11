@@ -22,7 +22,7 @@
   label{ display:block; font-size:12px; color:var(--muted); margin:6px 0 4px; }
   input, select{ width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:10px; font-size:15px; }
   .rowTop{ display:grid; grid-template-columns:140px 1fr; gap:10px; align-items:end; }
-  .rowBottom{ display:grid; grid-template-columns:170px 150px 220px 160px; gap:10px; align-items:end; }
+  .rowBottom{ display:grid; grid-template-columns:170px 150px 240px 160px; gap:10px; align-items:end; }
   .btn{ padding:10px 14px; border:1px solid #d1d5db; border-radius:10px; background:#fff; cursor:pointer; }
   .btn.blue{ background:var(--blue); color:#fff; border-color:var(--blue); }
   .btn.green{ background:var(--green); color:#fff; border-color:var(--green); }
@@ -31,6 +31,12 @@
   .hidden{ display:none !important; }
   .modal{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50;}
   .modal .inner{ width:100%; max-width:420px; background:#fff; border-radius:14px; padding:18px; border:1px solid var(--line);}
+  .two-pay{ background:#fafafa; border:1px dashed #d1d5db; border-radius:12px; padding:10px; margin-top:10px }
+  .two-grid{ display:grid; grid-template-columns: 1fr 140px 1fr 140px; gap:10px; align-items:end }
+  @media (max-width:920px){
+    .rowBottom{ grid-template-columns:1fr 1fr; }
+    .two-grid{ grid-template-columns:1fr 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -52,7 +58,7 @@
   <section class="card">
     <h3>Conceptos a facturar</h3>
 
-    <!-- Fila 1: Código + Descripción (ancha) -->
+    <!-- Fila 1: Código + Descripción -->
     <div class="rowTop">
       <div>
         <label>Código</label>
@@ -70,12 +76,12 @@
         <label>Rubro (obligatorio)</label>
         <select id="inpRubro" required>
           <option value="">— Elegir rubro —</option>
-          <option>Receta</option>
-          <option>Lentes de contacto</option>
-          <option>Líquidos LC</option>
-          <option>Reparaciones y varios</option>
-          <option>Sol</option>
-          <option>Fotos y pilas</option>
+          <option>RECETA</option>
+          <option>ANT DE SOL</option>
+          <option>LENTES DE CONTACTO</option>
+          <option>LIQUIDOS PARA LC</option>
+          <option>FOTOS Y PILAS</option>
+          <option>VARIOS Y REPARACIONES</option>
         </select>
       </div>
       <div>
@@ -83,21 +89,60 @@
         <input type="number" id="inpUnit" inputmode="decimal" placeholder="0">
       </div>
       <div>
-        <label>Forma de pago</label>
+        <label>Forma de pago (1 medio)</label>
         <select id="fdp" required>
           <option value="">— Elegir forma de pago —</option>
           <option>EFECTIVO</option>
-          <option>MERCADOPAGO</option>
-          <option>TRANSFERENCIA</option>
+          <option>TARJETA DE DÉBITO</option>
           <option>TARJETA DE CRÉDITO</option>
-          <option>TARJETA DE DEBITO</option>
+          <option>TRANSFERENCIA</option>
+          <option>PAY WAY</option>
           <option>LINK DE PAGO</option>
         </select>
       </div>
       <div>
         <label style="visibility:hidden">—</label>
-        <button class="btn blue" id="btnAgregar">Registrar venta</button>
+        <button class="btn" id="btn2Medios">Usar 2 medios</button>
       </div>
+    </div>
+
+    <!-- 2 medios de pago -->
+    <div id="twoPayBox" class="two-pay hidden">
+      <div class="two-grid">
+        <div>
+          <label>Medio 1</label>
+          <select id="fdp1">
+            <option value="">— Elegir —</option>
+            <option>EFECTIVO</option>
+            <option>TARJETA DE DÉBITO</option>
+            <option>TARJETA DE CRÉDITO</option>
+            <option>TRANSFERENCIA</option>
+            <option>PAY WAY</option>
+            <option>LINK DE PAGO</option>
+          </select>
+        </div>
+        <div>
+          <label>Monto 1</label>
+          <input id="monto1" type="number" inputmode="decimal" placeholder="0">
+        </div>
+        <div>
+          <label>Medio 2</label>
+          <select id="fdp2">
+            <option value="">— Elegir —</option>
+            <option>EFECTIVO</option>
+            <option>TARJETA DE DÉBITO</option>
+            <option>TARJETA DE CRÉDITO</option>
+            <option>TRANSFERENCIA</option>
+            <option>PAY WAY</option>
+            <option>LINK DE PAGO</option>
+          </select>
+        </div>
+        <div>
+          <label>Monto 2 (resto)</label>
+          <input id="monto2" type="number" inputmode="decimal" placeholder="0" readonly>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:6px">Tip: escribí el <b>Monto 1</b> y el <b>Monto 2</b> se completa con el resto.</div>
     </div>
 
     <div style="margin-top:10px">
@@ -105,7 +150,11 @@
       <input id="obs" placeholder="">
     </div>
 
-    <div id="msgLinea" class="muted" style="margin-top:8px"></div>
+    <div class="pill" id="msgLinea" style="margin-top:8px">Enter NO guarda. Enter en “Precio” guarda. Atajo <b>F9</b> = Registrar.</div>
+
+    <div style="display:flex; gap:10px; margin-top:12px">
+      <button class="btn blue" id="btnAgregar">Registrar venta</button>
+    </div>
   </section>
 
   <section class="card">
@@ -167,9 +216,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbz0IcejvHa6-m8iqvSHpUXx9zXgK1yRHJWy3CYtovUIqCxlZQRtEzPZRekxIZQo9im_Gg/exec';
-const WITHDRAW_AUTH = ['JU','JI'];
+/* ====== CONFIG ====== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbzCrjA2KA1UnWMvEiqehk4_bbmyecwXduTv9jwYXlACpCxQ6iI_7KB3F6KORT-Vqma6kA/exec';
+const WITHDRAW_AUTH = ['JU','JI']; // Retiros: Juan y Jimena
 
+/* ====== HELPERS ====== */
 const qs = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Number(n||0));
 function setEmp(emp){ localStorage.setItem('OC_EMP_CODE',(emp.codigo+'').toUpperCase()); localStorage.setItem('OC_EMP_NAME',emp.nombre); qs('#empName').textContent=emp.nombre; toggleAutorizados(); }
@@ -178,11 +229,11 @@ function showLogin(){ qs('#loginModal').classList.remove('hidden'); qs('#empCode
 function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
 async function apiGet(p){ const r=await fetch(API_URL+'?'+new URLSearchParams(p).toString()); return r.json(); }
 async function apiPost(payload){ const r=await fetch(API_URL,{method:'POST', body:JSON.stringify(payload)}); return r.json(); }
-
 let SAVING=false;
-function showSaving(){ Swal.fire({title:'Guardando…',allowOutsideClick:false,didOpen:()=>Swal.showLoading()}); }
-function closeSaving(){ Swal.close(); }
+const showSaving=()=>Swal.fire({title:'Guardando…',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+const closeSaving=()=>Swal.close();
 
+/* ====== UI: Últimas ====== */
 async function cargarUltimas(){
   const r = await apiGet({action:'ultimas', n:3});
   const el = qs('#ultimas');
@@ -190,20 +241,47 @@ async function cargarUltimas(){
   el.innerHTML = r.data.map(u=>`<div class="pill" style="display:block;margin:6px 0">${u.hora} • ${u.emp} • ${u.fdp} • ${u.desc} • <b>${money(u.total)}</b></div>`).join('');
 }
 
-async function buscarStock(num){ const r = await apiGet({action:'stock_get', num}); return r.ok ? r.data : null; }
+/* ====== Stock ====== */
+async function buscarStock(num){
+  return await apiGet({action:'stock_get', num});
+}
 async function lookupDesdeCodigo(e){
   if(e.key!=='Enter' && e.key!=='Tab') return;
   e.preventDefault();
   const code = (qs('#inpCodigo').value||'').trim();
   if(!code){ qs('#inpDesc').focus(); return; }
-  const it = await buscarStock(code);
-  if(it){
+  Swal.fire({title:'Buscando código…',timer:800,showConfirmButton:false, didOpen:()=>Swal.showLoading()});
+  const r = await buscarStock(code);
+  if(r && r.ok){
+    const it = r.data || {};
     qs('#inpDesc').value = it.descripcion || '';
     qs('#inpUnit').value = Number(it.precio||0);
   }
   qs('#inpDesc').focus();
 }
 
+/* ====== Split pagos ====== */
+let SPLIT=false;
+function toggleTwo(){
+  SPLIT = !SPLIT;
+  qs('#twoPayBox').classList.toggle('hidden', !SPLIT);
+  qs('#btn2Medios').textContent = SPLIT ? '1 medio de pago' : 'Usar 2 medios';
+  if(SPLIT){
+    // Prefill: fdp1 toma lo elegido en fdp, monto1 vacío, monto2 = total
+    qs('#fdp1').value = qs('#fdp').value || '';
+    qs('#monto1').value = '';
+    recomputeMonto2();
+    setTimeout(()=>qs('#fdp1').focus(),0);
+  }
+}
+function recomputeMonto2(){
+  const total = Number(qs('#inpUnit').value||0);
+  const m1 = Math.max(0, Number(qs('#monto1').value||0));
+  const m2 = Math.max(0, total - m1);
+  qs('#monto2').value = m2;
+}
+
+/* ====== Guardar venta ====== */
 async function guardarVenta(){
   if(SAVING) return;
   const emp=getEmp(); if(!emp.codigo){ showLogin(); return; }
@@ -216,39 +294,46 @@ async function guardarVenta(){
   const obs   =(qs('#obs').value||'').trim();
 
   if(!rubro){ Swal.fire('Falta rubro','Elegí un rubro.','warning'); qs('#inpRubro').focus(); return; }
-  if(!fdp){ Swal.fire('Falta forma de pago','Elegí la forma de pago.','warning'); qs('#fdp').focus(); return; }
-  if(!desc || unit<=0){ Swal.fire('Faltan datos','Completá descripción y precio > 0.','warning'); if(!desc) qs('#inpDesc').focus(); else qs('#inpUnit').focus(); return; }
+  if(unit<=0 || !desc){ Swal.fire('Faltan datos','Completá descripción y precio > 0.','warning'); if(!desc) qs('#inpDesc').focus(); else qs('#inpUnit').focus(); return; }
 
   const descFinal = `${rubro}: ${desc}`.trim();
 
   try{
     SAVING=true; qs('#btnAgregar').disabled=true; showSaving();
-    const res = await apiPost({
-      action:'venta_add',
-      empleadoCodigo: emp.codigo,
-      fdp, monto: unit,
-      numItem: codigo,
-      precioItem: unit,
-      descripcion: descFinal,
-      obs
-    });
-    qs('#btnAgregar').disabled=false; SAVING=false; closeSaving();
 
-    if(res.ok){
-      await cargarUltimas();
-      qs('#inpCodigo').value=''; qs('#inpDesc').value=''; qs('#inpUnit').value='';
-      qs('#inpRubro').value=''; qs('#fdp').value=''; qs('#obs').value='';
-      Swal.fire({icon:'success', title:'Venta registrada', timer:1100, showConfirmButton:false});
-      setTimeout(()=>showLogin(),650);
+    if(SPLIT){
+      const f1 = qs('#fdp1').value;
+      const f2 = qs('#fdp2').value;
+      const m1 = Number(qs('#monto1').value||0);
+      const m2 = Number(qs('#monto2').value||0);
+      if(!f1 || !f2){ closeSaving(); qs('#btnAgregar').disabled=false; SAVING=false; return Swal.fire('Faltan medios','Elegí ambos medios de pago.','warning'); }
+      if(m1+m2 !== unit){ /* tolerancia */ }
+      // 1a línea
+      await apiPost({ action:'venta_add', empleadoCodigo: emp.codigo, fdp:f1, monto:m1, numItem: codigo, precioItem: unit, descripcion: descFinal, obs });
+      // 2a línea
+      await apiPost({ action:'venta_add', empleadoCodigo: emp.codigo, fdp:f2, monto:m2, numItem: codigo, precioItem: unit, descripcion: descFinal, obs });
     }else{
-      Swal.fire('Error', res.error || 'No se pudo guardar.', 'error');
+      if(!fdp){ closeSaving(); qs('#btnAgregar').disabled=false; SAVING=false; return Swal.fire('Falta forma de pago','Elegí la forma de pago.','warning'); }
+      await apiPost({ action:'venta_add', empleadoCodigo: emp.codigo, fdp, monto: unit, numItem: codigo, precioItem: unit, descripcion: descFinal, obs });
     }
+
+    qs('#btnAgregar').disabled=false; SAVING=false; closeSaving();
+    await cargarUltimas();
+
+    // limpiar (y volver a pedir empleado si querés: lo dejamos como estaba el sábado)
+    qs('#inpCodigo').value=''; qs('#inpDesc').value=''; qs('#inpUnit').value='';
+    qs('#inpRubro').value=''; qs('#fdp').value=''; qs('#obs').value='';
+    if(SPLIT){ toggleTwo(); qs('#fdp1').value=''; qs('#fdp2').value=''; qs('#monto1').value=''; qs('#monto2').value=''; }
+
+    Swal.fire({icon:'success', title:'Venta registrada', timer:1000, showConfirmButton:false});
+    setTimeout(()=>showLogin(),650);
   }catch(e){
     qs('#btnAgregar').disabled=false; SAVING=false; closeSaving();
     Swal.fire('Error de red', e.message||'Falló la conexión', 'error');
   }
 }
 
+/* ====== Autorizados / Retiros & Cierre ====== */
 function toggleAutorizados(){
   const emp=getEmp();
   qs('#panelRetiros').classList.toggle('hidden', !WITHDRAW_AUTH.includes((emp.codigo||'').toUpperCase()));
@@ -271,6 +356,7 @@ async function generarCierre(){
   }catch(e){ Swal.close(); Swal.fire('Error de red', e.message||'Falló la conexión','error'); }
 }
 
+/* ====== Login ====== */
 async function doLogin(){
   const code=(qs('#empCode').value||'').trim().toUpperCase();
   if(!code) return;
@@ -280,16 +366,23 @@ async function doLogin(){
   else { m.textContent=r.error||'Código inválido'; }
 }
 
+/* ====== INIT ====== */
 function init(){
   const d=new Date();
   qs('#hoy').textContent=d.toLocaleDateString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
   qs('#fechaHoy').textContent=d.toLocaleDateString('es-AR');
 
+  // Eventos
   qs('#inpCodigo').addEventListener('keydown', lookupDesdeCodigo);
   qs('#inpDesc').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); qs('#inpUnit').focus(); }});
   qs('#inpUnit').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); guardarVenta(); }});
-  qs('#btnAgregar').onclick = guardarVenta;
+  document.addEventListener('keydown', e=>{ if(e.key==='F9'){ e.preventDefault(); guardarVenta(); } if(e.key==='Enter' && e.target!==qs('#inpUnit')) e.preventDefault(); });
 
+  qs('#btn2Medios').onclick = toggleTwo;
+  qs('#monto1').addEventListener('input', recomputeMonto2);
+  qs('#inpUnit').addEventListener('input', recomputeMonto2);
+
+  qs('#btnAgregar').onclick = guardarVenta;
   qs('#btnMov').onclick = registrarMov;
   qs('#btnCierre').onclick = generarCierre;
 
