@@ -8,52 +8,64 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
   :root{
-    --bg:#f7fafc; --card:#ffffff; --line:#e5e7eb; --fg:#0f172a; --muted:#64748b;
-    --accent:#2563eb; --accentText:#fff; --soft:#f1f5f9;
+    --bg:#f4f6f8; --card:#fff; --line:#e5e7eb; --fg:#111827; --muted:#6b7280;
+    --accent:#2563eb; --accentText:#fff;
   }
-  html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,Arial}
-  .wrap{max-width:920px;margin:22px auto;padding:0 14px}
-  h1{font-size:1.25rem;margin:0 0 12px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 8px 26px rgba(2,6,23,.06)}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  label{display:block;font-weight:600;margin-top:10px}
-  input,select,button,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--fg);font-size:16px}
-  textarea{min-height:70px;resize:vertical}
-  button{cursor:pointer;border:0;background:var(--accent);color:var(--accentText);font-weight:700}
-  button.secondary{background:#f8fafc;color:#0f172a;border:1px solid var(--line)}
-  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--soft);border:1px solid var(--line);font-size:.85rem}
-  #msg{margin:10px 0;padding:10px;border-radius:10px;background:var(--soft);border:1px dashed var(--line)}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,Segoe UI,Arial}
+  .wrap{max-width:1180px;margin:26px auto;padding:0 16px}
+  .section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+  .title{font-weight:700;margin:2px 0 10px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:4px}
+  input,select,textarea,button{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--fg);font-size:15px
+  }
+  textarea{min-height:60px;resize:vertical}
+  button.primary{background:var(--accent);color:var(--accentText);border:0;font-weight:700;cursor:pointer}
+  button.primary:active{transform:translateY(1px)}
   .muted{color:var(--muted);font-size:.9rem}
-  .item{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
-  .history{margin-top:16px}
-  .modal-back{position:fixed;inset:0;background:rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;z-index:40}
-  .modal{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;width:min(420px,92vw);box-shadow:0 22px 60px rgba(2,6,23,.15)}
-  .modal h2{margin:0 0 12px;font-size:1.1rem}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .item{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px}
+  .right{text-align:right}
+  .pill{display:inline-block;background:#eef2ff;color:#1e3a8a;padding:2px 8px;border-radius:999px;border:1px solid #c7d2fe;font-size:.85rem}
+  .kbd{background:#111827;color:#fff;border-radius:6px;padding:2px 6px;font-size:.8rem}
+  .bar{display:flex;gap:10px;align-items:center}
+  @media (max-width:900px){ .row{grid-template-columns:1fr} .grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Emitir Comprobante <span class="badge">Óptica Cristal</span></h1>
-
-    <div id="msg">Completá rubro, forma de pago y monto</div>
-
-    <div class="card">
-      <div class="row">
+    <!-- Datos del comprobante -->
+    <div class="section">
+      <div class="title">Datos del Comprobante</div>
+      <div class="grid">
         <div>
-          <label for="codigo">Código de artículo</label>
-          <input id="codigo" placeholder="Escaneá o escribí" autocomplete="off"/>
-          <div class="muted" style="margin-top:6px">Enter o salir del campo ⇒ busca en Stock</div>
+          <label>Fecha</label>
+          <input id="fecha-view" readonly>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conceptos a facturar -->
+    <div class="section">
+      <div class="title">Conceptos a facturar</div>
+
+      <div class="grid">
+        <div>
+          <label for="codigo">Código</label>
+          <input id="codigo" placeholder="Escaneá o escribí" autocomplete="off">
+          <div class="muted" style="margin-top:4px">Enter o salir del campo ⇒ busca en Stock</div>
         </div>
         <div>
-          <label for="precio">Precio total</label>
-          <input id="precio" type="number" step="0.01" inputmode="decimal" value="0"/>
+          <label for="descripcion">Descripción</label>
+          <input id="descripcion" placeholder="Se completa desde Stock (editable)">
         </div>
       </div>
 
-      <div class="row">
+      <div class="row" style="margin-top:10px">
         <div>
-          <label for="rubro">Categoría</label>
+          <label for="rubro">Rubro (obligatorio)</label>
           <select id="rubro">
             <option value="">— Elegir —</option>
             <option>RECETA</option>
@@ -63,6 +75,10 @@
             <option>FOTOS Y PILAS</option>
             <option>VARIOS Y REPARACIONES</option>
           </select>
+        </div>
+        <div>
+          <label for="precio">Precio Unit.</label>
+          <input id="precio" type="number" step="0.01" inputmode="decimal" value="0">
         </div>
         <div>
           <label for="fdp">Forma de pago</label>
@@ -77,201 +93,144 @@
         </div>
       </div>
 
-      <label for="descripcion">Descripción</label>
-      <textarea id="descripcion" placeholder="Se completa desde Stock (editable)"></textarea>
-
-      <label for="obs">Observaciones (opcional)</label>
-      <input id="obs" placeholder="Notas…"/>
-
-      <div class="row" style="margin-top:12px">
-        <button id="btn-registrar" class="secondary" style="height:48px;border-width:2px;border-color:#c7d2fe;background:#eef2ff;color:#1e3a8a">
-          Registrar venta (F9)
-        </button>
-        <button id="btn-cierre" type="button" class="secondary">Cierre de lote (hoy)</button>
+      <div class="bar" style="margin-top:10px">
+        <button id="btn-registrar" class="primary" style="width:auto;padding:10px 14px">Registrar venta</button>
+        <span class="muted">Atajo: <span class="kbd">F9</span></span>
       </div>
 
-      <div class="history">
-        <div class="muted" style="margin:6px 0 8px">Últimas 5 ventas</div>
-        <div id="hist"></div>
+      <div style="margin-top:10px">
+        <label for="obs">Observaciones</label>
+        <input id="obs" placeholder="Opcional…">
       </div>
+    </div>
+
+    <!-- Últimas ventas -->
+    <div class="section">
+      <div class="title">Últimas ventas (5)</div>
+      <div id="hist" class="list"></div>
     </div>
   </div>
 
-  <!-- MODAL vendedor -->
-  <div id="modal-back" class="modal-back">
-    <div class="modal">
-      <h2>Ingresar empleado</h2>
-      <div class="muted">Escribí tu <b>código</b> (ej.: JU / JI / RO / LU / CA)</div>
-      <input id="vend" placeholder="Código empleado" autocomplete="off" style="margin-top:10px"/>
-      <div class="row" style="margin-top:12px">
-        <button id="btn-vend" style="background:#2563eb;color:#fff">Entrar</button>
-        <button id="btn-cancel" class="secondary" type="button">Cancelar</button>
+  <!-- Modal vendedor -->
+  <div id="modal" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:40">
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px;max-width:420px;width:92%">
+      <div class="title">Ingresar empleado</div>
+      <div class="muted">Escribí tu <b>código</b> (JU / JI / RO / LU / CA)</div>
+      <input id="vend" placeholder="Código empleado" autocomplete="off" style="margin-top:10px">
+      <div class="bar" style="margin-top:10px">
+        <button id="btn-vend" class="primary" style="width:auto">Entrar</button>
+        <button id="btn-cancel" style="width:auto">Cancelar</button>
       </div>
     </div>
   </div>
 
 <script>
 /* ===== CONFIG ===== */
-const API = 'https://script.google.com/macros/s/AKfycbzCrjA2KA1UnWMvEiqehk4_bbmyecwXduTv9jwYXlACpCxQ6iI_7KB3F6KORT-Vqma6kA/exec';
-const LS_CODE = 'OC_V_CODE';
-const LS_NAME = 'OC_V_NAME';
+const API = 'https://script.google.com/macros/s/AKfycbyF_tl-DwBa2i-2B7Uh-9naoqHBBbtXc9Xb2ae81ldu3MdAJcpxHHgXRNHG4MlmAffmhA/exec';
+const LS_CODE='OC_V_CODE', LS_NAME='OC_V_NAME';
 
 /* ===== UTILS ===== */
-const $ = s => document.querySelector(s);
-function msg(t, ok=true){ const m=$('#msg'); m.textContent=t; m.style.color=ok?'#0f172a':'#b91c1c'; }
-function qs(o){ return Object.entries(o).map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v??'')}`).join('&'); }
-function jsonp(url){
-  return new Promise((resolve,reject)=>{
-    const cb='cb_'+Math.random().toString(36).slice(2);
-    window[cb]=(data)=>{ resolve(data); delete window[cb]; s.remove(); };
-    const s=document.createElement('script'); s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
-    s.onerror=()=>{ delete window[cb]; s.remove(); reject(new Error('JSONP error')); };
-    document.head.appendChild(s);
-  });
-}
+const $=s=>document.querySelector(s);
+const qs=o=>Object.entries(o).map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v??'')}`).join('&');
+function jsonp(url){return new Promise((res,rej)=>{const cb='cb_'+Math.random().toString(36).slice(2);window[cb]=(d)=>{res(d);delete window[cb];s.remove();};const s=document.createElement('script');s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;s.onerror=()=>{delete window[cb];s.remove();rej(new Error('JSONP'));};document.head.appendChild(s);});}
+function setToday(){ const d=new Date(); const pad=n=>String(n).padStart(2,'0'); $('#fecha-view').value=`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`; }
 
-/* ===== MODAL vendedor ===== */
-function requireVendedor(){
-  $('#modal-back').style.display = 'flex';
-  $('#vend').value='';
-  setTimeout(()=>$('#vend').focus(), 50);
-}
-function setVendedor(code, name){
-  localStorage.setItem(LS_CODE, code);
-  localStorage.setItem(LS_NAME, name);
-  $('#modal-back').style.display = 'none';
-  msg(`Hola ${name||code} 👋  •  Listo para operar`);
-  $('#codigo').focus();
-}
-function forgetVendedor(){ localStorage.removeItem(LS_CODE); localStorage.removeItem(LS_NAME); }
+/* ===== MODAL VENDEDOR ===== */
+function requireVend(){ $('#modal').style.display='flex'; $('#vend').value=''; setTimeout(()=>$('#vend').focus(),50); }
+function setVend(c,n){ localStorage.setItem(LS_CODE,c); localStorage.setItem(LS_NAME,n); $('#modal').style.display='none'; $('#codigo').focus(); }
+function clearVend(){ localStorage.removeItem(LS_CODE); localStorage.removeItem(LS_NAME); }
 
-document.addEventListener('DOMContentLoaded', async ()=>{
-  const c = localStorage.getItem(LS_CODE);
-  const n = localStorage.getItem(LS_NAME);
-  if(c && n){ setVendedor(c,n); } else { requireVendedor(); }
-  await cargarHistorial();
-});
-
-/* Validar vendedor */
 async function validarVend(){
-  const code = ($('#vend').value||'').trim().toUpperCase();
-  if(!code){ msg('Ingresá tu código', false); return; }
-  const r = await jsonp(`${API}?action=validarVendedor&code=${encodeURIComponent(code)}`);
-  if(r.ok){ setVendedor(r.codigo, r.nombre||r.codigo); }
-  else { Swal.fire({icon:'error', title:r.error||'Código inválido'}); }
+  const code=($('#vend').value||'').trim().toUpperCase(); if(!code) return;
+  const r=await jsonp(`${API}?action=validarVendedor&code=${encodeURIComponent(code)}`);
+  if(r.ok){ setVend(r.codigo, r.nombre||r.codigo); }
+  else{ Swal.fire({icon:'error',title:r.error||'Código inválido'}); }
 }
 $('#btn-vend').addEventListener('click', validarVend);
 $('#vend').addEventListener('keydown', e=>{ if(e.key==='Enter') validarVend(); });
-$('#btn-cancel').addEventListener('click', ()=>{ $('#vend').value=''; $('#vend').focus(); });
+$('#btn-cancel').addEventListener('click', ()=>$('#vend').focus());
 
 /* ===== BUSCAR ARTÍCULO ===== */
 async function buscarArticulo(){
-  const cod = ($('#codigo').value||'').trim();
-  if(!cod) return;
-  Swal.fire({title:'Buscando código…', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+  const cod=($('#codigo').value||'').trim(); if(!cod) return;
+  Swal.fire({title:'Buscando código…',allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
   try{
-    const r = await jsonp(`${API}?action=getArticulo&codigo=${encodeURIComponent(cod)}`);
+    const r=await jsonp(`${API}?action=getArticulo&codigo=${encodeURIComponent(cod)}`);
     if(r.ok){
-      $('#descripcion').value = r.descripcion || '';
-      $('#precio').value = r.precio || 0;
-      Swal.fire({icon:'success', title:'Artículo encontrado', timer:950, showConfirmButton:false});
+      $('#descripcion').value=r.descripcion||'';
+      $('#precio').value=r.precio||0;
+      Swal.fire({icon:'success',title:'Artículo encontrado',timer:900,showConfirmButton:false});
     }else{
-      Swal.fire({icon:'warning', title:r.error||'No encontrado', timer:1400, showConfirmButton:false});
+      Swal.fire({icon:'warning',title:r.error||'No encontrado',timer:1300,showConfirmButton:false});
     }
-  }catch(err){
-    Swal.fire({icon:'error', title:'Error buscando código', text:String(err)});
-  }
+  }catch(err){ Swal.fire({icon:'error',title:'Error de red',text:String(err)}); }
 }
-// Enter en código = busca; NO guarda
 $('#codigo').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); buscarArticulo(); } });
 $('#codigo').addEventListener('blur', buscarArticulo);
 
-/* ===== BLOQUEAR ENTER GLOBAL (no guardar) ===== */
-// Evita submit accidental por pistolita; salvo en modal vendedor
+/* ===== BLOQUEAR ENTER (no guardar) + F9 ===== */
 document.addEventListener('keydown', e=>{
-  const inVend = document.activeElement === $('#vend') || $('#modal-back').style.display==='flex';
-  if(!inVend && e.key === 'Enter'){ e.preventDefault(); }
-  // F9 = registrar venta
-  if(e.key === 'F9'){ e.preventDefault(); $('#btn-registrar').click(); }
+  const inVend = document.activeElement===$('#vend') || $('#modal').style.display!=='none';
+  if(!inVend && e.key==='Enter'){ e.preventDefault(); }
+  if(e.key==='F9'){ e.preventDefault(); $('#btn-registrar').click(); }
 });
 
 /* ===== REGISTRAR VENTA ===== */
 $('#btn-registrar').addEventListener('click', async ()=>{
-  const vCode = localStorage.getItem(LS_CODE);
-  const vName = localStorage.getItem(LS_NAME);
-  if(!vCode || !vName){ requireVendedor(); return; }
+  const vCode=localStorage.getItem(LS_CODE), vName=localStorage.getItem(LS_NAME);
+  if(!vCode||!vName){ requireVend(); return; }
+  const payload={
+    vendedor:vCode, vendedor_nombre:vName,
+    codigo:($('#codigo').value||'').trim(),
+    rubro:($('#rubro').value||'').trim(),
+    descripcion:($('#descripcion').value||'').trim(),
+    precio:Number($('#precio').value||0)||0,
+    fdp:($('#fdp').value||'').trim(),
+    observaciones:($('#obs').value||'').trim()
+  };
+  if(!payload.rubro) return Swal.fire({icon:'warning',title:'Elegí el rubro'});
+  if(!payload.fdp)   return Swal.fire({icon:'warning',title:'Elegí la forma de pago'});
+  if(!payload.precio) return Swal.fire({icon:'warning',title:'Ingresá un monto válido'});
 
-  const codigo = ($('#codigo').value||'').trim();
-  const rubro  = ($('#rubro').value||'').trim();
-  const descripcion = ($('#descripcion').value||'').trim();
-  const precio = Number($('#precio').value||0)||0;
-  const obs = ($('#obs').value||'').trim();
-  const fdp = $('#fdp').value.trim();
-
-  if(!fdp){ msg('Elegí forma de pago', false); return; }
-  if(!rubro){ msg('Elegí la categoría', false); return; }
-  if(!precio){ msg('Ingresá un monto válido', false); return; }
-
-  const url = `${API}?action=registrarVenta&` + qs({
-    vendedor: vCode, vendedor_nombre: vName, codigo, rubro, descripcion, precio, fdp, observaciones: obs
-  });
-
-  Swal.fire({title:'Guardando…', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+  Swal.fire({title:'Guardando…',allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
   try{
-    const r = await jsonp(url);
+    const r=await jsonp(`${API}?action=registrarVenta&`+qs(payload));
     if(r.ok){
-      Swal.fire({icon:'success', title:'Venta registrada', timer:1100, showConfirmButton:false});
-      msg('Venta registrada ✔');
-
-      // limpiar venta
-      $('#codigo').value=''; $('#descripcion').value=''; $('#precio').value=0;
-      $('#obs').value=''; $('#fdp').value=''; $('#rubro').value='';
-
+      Swal.fire({icon:'success',title:'Venta registrada',timer:1100,showConfirmButton:false});
+      // limpiar
+      $('#codigo').value=''; $('#descripcion').value=''; $('#precio').value=0; $('#fdp').value=''; $('#rubro').value=''; $('#obs').value='';
       // volver a pedir empleado
-      forgetVendedor();
-      requireVendedor();
-
-      await cargarHistorial();
+      clearVend(); requireVend();
+      // refrescar historial
+      await cargarHist();
     }else{
-      Swal.fire({icon:'error', title:'No se pudo registrar', text:r.error||'Error'});
-      msg(r.error||'No se pudo registrar', false);
+      Swal.fire({icon:'error',title:r.error||'No se pudo registrar'});
     }
-  }catch(err){
-    Swal.fire({icon:'error', title:'Error de red', text:String(err)});
-  }
-});
-
-/* ===== CIERRE DE LOTE ===== */
-$('#btn-cierre').addEventListener('click', async ()=>{
-  const r = await jsonp(`${API}?action=cierreLote`);
-  if(!r.ok){ Swal.fire({icon:'error', title:'Error', text:r.error||'No se pudo calcular'}); return; }
-  const tot = r.totales||{};
-  const html = Object.keys(tot).map(k=>`<div style="margin:4px 0"><b>${k}</b>: $${tot[k]}</div>`).join('');
-  Swal.fire({title:`Cierre ${r.dia}`, html: html+`<hr/><b>Total:</b> $${r.total_general}`});
+  }catch(err){ Swal.fire({icon:'error',title:'Error de red',text:String(err)}); }
 });
 
 /* ===== HISTORIAL ===== */
-async function cargarHistorial(){
+async function cargarHist(){
   try{
-    const r = await jsonp(`${API}?action=ultimasVentas`);
-    if(!r.ok) return;
-    const cont = $('#hist'); cont.innerHTML='';
+    const r=await jsonp(`${API}?action=ultimasVentas`);
+    const cont=$('#hist'); cont.innerHTML='';
     (r.items||[]).forEach(v=>{
-      const el = document.createElement('div'); el.className='item';
-      el.innerHTML = `
-        <div>
-          <div><b>$${v.monto}</b> • ${v.fdp}</div>
-          <small class="muted">${v.descripcion}</small>
-        </div>
-        <div style="text-align:right">
-          <small>${v.fecha}</small><br/>
-          <small>${v.empleado}</small>
-        </div>`;
+      const el=document.createElement('div'); el.className='item';
+      el.innerHTML=`<div><div><b>$${v.monto}</b> • <span class="pill">${v.fdp}</span></div><div class="muted">${v.descripcion}</div></div>
+                    <div class="right"><div class="muted">${v.fecha}</div><div class="muted">${v.empleado}</div></div>`;
       cont.appendChild(el);
     });
-    if((r.items||[]).length===0){ cont.innerHTML='<div class="muted">Sin ventas recientes</div>'; }
-  }catch(_){ /* ignore */ }
+    if((r.items||[]).length===0) cont.innerHTML='<div class="muted">Sin ventas recientes</div>';
+  }catch(_){}
 }
+
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  setToday();
+  const c=localStorage.getItem(LS_CODE), n=localStorage.getItem(LS_NAME);
+  if(c&&n){ $('#modal').style.display='none'; $('#codigo').focus(); } else { requireVend(); }
+  cargarHist();
+});
 </script>
 </body>
 </html>
