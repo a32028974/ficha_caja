@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Emitir Comprobante • Óptica Cristal</title>
+<title>Emitir Comprobante v3 • Óptica Cristal</title>
 <link rel="icon" href="logo.png" />
 <style>
   :root{
@@ -30,7 +30,7 @@
   .muted{ color:var(--muted); }
   .hidden{ display:none !important; }
   .modal{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50;}
-  .modal .inner{ width:100%; max-width:420px; background:#fff; border-radius:14px; padding:18px; border:1px solid var(--line);}
+  .modal .inner{ width:100%; max-width:420px; background:#fff; border-radius:14px; padding:18px; border:1px solid var(--line); text-align:center;}
   /* Mini loader */
   .spinner{ width:18px; height:18px; border:3px solid #e5e7eb; border-top-color:#2563eb; border-radius:50%; animation:sp .9s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px;}
   @keyframes sp{to{transform:rotate(360deg)}}
@@ -39,7 +39,7 @@
 <body>
 <header>
   <img src="logo.png" alt="Óptica Cristal">
-  <div class="title">Emitir Comprobante v2</div>
+  <div class="title">Emitir Comprobante v3</div>
   <div class="badge">📅 <span id="hoy"></span></div>
   <div class="badge">👤 <b id="empName">—</b></div>
   <button class="btn" id="btnCambiar">Cambiar empleado</button>
@@ -151,7 +151,7 @@
 
 </div>
 
-<!-- Modal login -->
+<!-- Modal LOGIN -->
 <div class="modal hidden" id="loginModal">
   <div class="inner">
     <h3>Ingresar empleado</h3>
@@ -167,10 +167,19 @@
 
 <!-- Modal BUSCANDO producto -->
 <div class="modal hidden" id="findModal" aria-hidden="true">
-  <div class="inner" style="max-width:360px;text-align:center">
+  <div class="inner" style="max-width:360px;">
     <div class="spinner"></div>
     <b>Buscando artículo…</b>
     <p class="muted" style="margin:8px 0 0">Consultando el Stock</p>
+  </div>
+</div>
+
+<!-- Modal REGISTRANDO movimiento -->
+<div class="modal hidden" id="movModal" aria-hidden="true">
+  <div class="inner" style="max-width:360px;">
+    <div class="spinner"></div>
+    <b>Registrando movimiento…</b>
+    <p class="muted" style="margin:8px 0 0">Guardando en Caja</p>
   </div>
 </div>
 
@@ -200,6 +209,9 @@ function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
 
 function showFinding(){ qs('#findModal').classList.remove('hidden'); }
 function hideFinding(){ qs('#findModal').classList.add('hidden'); }
+
+function showMov(){ qs('#movModal').classList.remove('hidden'); }
+function hideMov(){ qs('#movModal').classList.add('hidden'); }
 
 async function apiGet(p){
   const r=await fetch(API_URL+'?'+new URLSearchParams(p).toString());
@@ -296,8 +308,27 @@ function toggleAutorizados(){
 
 async function registrarMov(){
   const emp=getEmp(); if(!emp.codigo){ showLogin(); return; }
-  const res=await apiPost({action:'mov_add', empleadoCodigo:emp.codigo, tipo:qs('#tipoMov').value, monto:Number(qs('#montoMov').value||0), descripcion:qs('#descMov').value.trim()});
-  const p=qs('#msgMov'); if(res.ok){ p.textContent='Movimiento registrado'; qs('#montoMov').value=''; qs('#descMov').value=''; } else { p.textContent=res.error||'Error'; }
+
+  showMov();
+  try{
+    const res=await apiPost({
+      action:'mov_add',
+      empleadoCodigo:emp.codigo,
+      tipo:qs('#tipoMov').value,
+      monto:Number(qs('#montoMov').value||0),
+      descripcion:qs('#descMov').value.trim()
+    });
+    if(res.ok){
+      qs('#montoMov').value=''; qs('#descMov').value='';
+      Swal.fire({icon:'success', title:'Movimiento registrado', timer:1100, showConfirmButton:false});
+    }else{
+      Swal.fire('Error', res.error||'No se pudo guardar el movimiento','error');
+    }
+  }catch(e){
+    Swal.fire('Error de red', e.message||'Falló la conexión','error');
+  }finally{
+    hideMov();
+  }
 }
 
 async function generarCierre(){
