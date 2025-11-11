@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Emitir Comprobante v3 • Óptica Cristal</title>
+<title>Emitir Comprobante v4 • Óptica Cristal</title>
 <link rel="icon" href="logo.png" />
 <style>
   :root{
@@ -39,7 +39,7 @@
 <body>
 <header>
   <img src="logo.png" alt="Óptica Cristal">
-  <div class="title">Emitir Comprobante v3</div>
+  <div class="title">Emitir Comprobante v4</div>
   <div class="badge">📅 <span id="hoy"></span></div>
   <div class="badge">👤 <b id="empName">—</b></div>
   <button class="btn" id="btnCambiar">Cambiar empleado</button>
@@ -152,7 +152,7 @@
 </div>
 
 <!-- Modal LOGIN -->
-<div class="modal hidden" id="loginModal">
+<div class="modal" id="loginModal">
   <div class="inner">
     <h3>Ingresar empleado</h3>
     <p class="muted">Escribí tu inicial <b>código</b></p>
@@ -191,28 +191,36 @@ const WITHDRAW_AUTH = ['JU','JI'];
 const qs = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Number(n||0));
 
+/* ===== Empleado en MEMORIA (no persistir) ===== */
+let CURRENT_EMP = null;
 function setEmp(emp){
-  localStorage.setItem('OC_EMP_CODE',(emp.codigo+'').toUpperCase());
-  localStorage.setItem('OC_EMP_NAME',emp.nombre);
-  qs('#empName').textContent=emp.nombre;
+  CURRENT_EMP = { codigo: String(emp.codigo||'').toUpperCase(), nombre: emp.nombre||'' };
+  qs('#empName').textContent = CURRENT_EMP.nombre || '—';
   toggleAutorizados();
 }
-function getEmp(){
-  return {codigo:(localStorage.getItem('OC_EMP_CODE')||'').toUpperCase(), nombre:localStorage.getItem('OC_EMP_NAME')||''};
+function clearEmp(){
+  CURRENT_EMP = null;
+  qs('#empName').textContent = '—';
+  toggleAutorizados();
 }
+function getEmp(){ return CURRENT_EMP; }
+
+/* ===== Login modal helpers ===== */
 function showLogin(){
+  clearEmp();
   qs('#loginModal').classList.remove('hidden');
-  qs('#empCode').value='';
-  qs('#loginMsg').textContent='';
+  qs('#empCode').value = '';
+  qs('#loginMsg').textContent = '';
 }
 function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
 
+/* ===== Otros modales ===== */
 function showFinding(){ qs('#findModal').classList.remove('hidden'); }
 function hideFinding(){ qs('#findModal').classList.add('hidden'); }
-
 function showMov(){ qs('#movModal').classList.remove('hidden'); }
 function hideMov(){ qs('#movModal').classList.add('hidden'); }
 
+/* ===== API ===== */
 async function apiGet(p){
   const r=await fetch(API_URL+'?'+new URLSearchParams(p).toString());
   return r.json();
@@ -222,6 +230,7 @@ async function apiPost(payload){
   return r.json();
 }
 
+/* ===== UI ===== */
 let SAVING=false;
 function showSaving(){ Swal.fire({title:'Guardando…',allowOutsideClick:false,didOpen:()=>Swal.showLoading()}); }
 function closeSaving(){ Swal.close(); }
@@ -256,9 +265,19 @@ async function lookupDesdeCodigo(e){
   }
 }
 
+function limpiarCamposVenta(){
+  qs('#inpCodigo').value='';
+  qs('#inpDesc').value='';
+  qs('#inpUnit').value='';
+  qs('#inpRubro').value='';
+  qs('#fdp').value='';
+  qs('#obs').value='';
+}
+
 async function guardarVenta(){
   if(SAVING) return;
-  const emp=getEmp(); if(!emp.codigo){ showLogin(); return; }
+  const emp=getEmp(); 
+  if(!emp){ showLogin(); return; }
 
   const codigo=(qs('#inpCodigo').value||'').trim();
   const rubro =qs('#inpRubro').value;
@@ -269,7 +288,11 @@ async function guardarVenta(){
 
   if(!rubro){ Swal.fire('Falta rubro','Elegí un rubro.','warning'); qs('#inpRubro').focus(); return; }
   if(!fdp){ Swal.fire('Falta forma de pago','Elegí la forma de pago.','warning'); qs('#fdp').focus(); return; }
-  if(!desc || unit<=0){ Swal.fire('Faltan datos','Completá descripción y precio > 0.','warning'); if(!desc) qs('#inpDesc').focus(); else qs('#inpUnit').focus(); return; }
+  if(!desc || unit<=0){ 
+    Swal.fire('Faltan datos','Completá descripción y precio > 0.','warning'); 
+    if(!desc) qs('#inpDesc').focus(); else qs('#inpUnit').focus(); 
+    return; 
+  }
 
   const descFinal = `${rubro}: ${desc}`.trim();
 
@@ -288,10 +311,10 @@ async function guardarVenta(){
 
     if(res.ok){
       await cargarUltimas();
-      qs('#inpCodigo').value=''; qs('#inpDesc').value=''; qs('#inpUnit').value='';
-      qs('#inpRubro').value=''; qs('#fdp').value=''; qs('#obs').value='';
-      Swal.fire({icon:'success', title:'Venta registrada', timer:1100, showConfirmButton:false});
-      setTimeout(()=>showLogin(),650);
+      limpiarCamposVenta();             // A) limpiar todo
+      Swal.fire({icon:'success', title:'Venta registrada', timer:900, showConfirmButton:false});
+      // volver a login y foco en código
+      setTimeout(()=>{ showLogin(); }, 650);
     }else{
       Swal.fire('Error', res.error || 'No se pudo guardar.', 'error');
     }
@@ -303,11 +326,13 @@ async function guardarVenta(){
 
 function toggleAutorizados(){
   const emp=getEmp();
-  qs('#panelRetiros').classList.toggle('hidden', !WITHDRAW_AUTH.includes((emp.codigo||'').toUpperCase()));
+  const isAuth = !!(emp && WITHDRAW_AUTH.includes((emp.codigo||'').toUpperCase()));
+  qs('#panelRetiros').classList.toggle('hidden', !isAuth);
 }
 
 async function registrarMov(){
-  const emp=getEmp(); if(!emp.codigo){ showLogin(); return; }
+  const emp=getEmp(); 
+  if(!emp){ showLogin(); return; }
 
   showMov();
   try{
@@ -332,7 +357,7 @@ async function registrarMov(){
 }
 
 async function generarCierre(){
-  const emp=getEmp(); if(!emp.codigo){ showLogin(); return; }
+  const emp=getEmp(); if(!emp){ showLogin(); return; }
   if(!WITHDRAW_AUTH.includes(emp.codigo)){ Swal.fire('No autorizado','','warning'); return; }
   const d=qs('#cierreDate').value||new Date().toISOString().slice(0,10);
   Swal.fire({title:'Generando PDF…',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
@@ -371,10 +396,10 @@ function init(){
   qs('#empCode').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doLogin(); }});
   qs('#btnCambiar').onclick=showLogin;
 
-  const emp=getEmp();
-  if(!emp.codigo){ showLogin(); } else { qs('#empName').textContent=emp.nombre; toggleAutorizados(); }
+  // SIEMPRE arrancar en login (sin empleado guardado)
+  showLogin();
 
-  // Autofocus del login cuando se muestra
+  // Autofocus en login cuando se muestra
   function focusLogin(){ setTimeout(()=>qs('#empCode').focus(), 120); }
   const modal = qs('#loginModal');
   const mo = new MutationObserver(focusLogin);
