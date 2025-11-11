@@ -31,12 +31,15 @@
   .hidden{ display:none !important; }
   .modal{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50;}
   .modal .inner{ width:100%; max-width:420px; background:#fff; border-radius:14px; padding:18px; border:1px solid var(--line);}
+  /* Mini loader */
+  .spinner{ width:18px; height:18px; border:3px solid #e5e7eb; border-top-color:#2563eb; border-radius:50%; animation:sp .9s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px;}
+  @keyframes sp{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <header>
   <img src="logo.png" alt="Óptica Cristal">
-  <div class="title">Emitir Comprobante v1 </div>
+  <div class="title">Emitir Comprobante v2</div>
   <div class="badge">📅 <span id="hoy"></span></div>
   <div class="badge">👤 <b id="empName">—</b></div>
   <button class="btn" id="btnCambiar">Cambiar empleado</button>
@@ -149,7 +152,7 @@
 </div>
 
 <!-- Modal login -->
-<div class="modal" id="loginModal">
+<div class="modal hidden" id="loginModal">
   <div class="inner">
     <h3>Ingresar empleado</h3>
     <p class="muted">Escribí tu inicial <b>código</b></p>
@@ -159,6 +162,15 @@
       <button class="btn" id="btnLogin">Entrar</button>
     </div>
     <p id="loginMsg" class="muted"></p>
+  </div>
+</div>
+
+<!-- Modal BUSCANDO producto -->
+<div class="modal hidden" id="findModal" aria-hidden="true">
+  <div class="inner" style="max-width:360px;text-align:center">
+    <div class="spinner"></div>
+    <b>Buscando artículo…</b>
+    <p class="muted" style="margin:8px 0 0">Consultando el Stock</p>
   </div>
 </div>
 
@@ -185,6 +197,9 @@ function showLogin(){
   qs('#loginMsg').textContent='';
 }
 function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
+
+function showFinding(){ qs('#findModal').classList.remove('hidden'); }
+function hideFinding(){ qs('#findModal').classList.add('hidden'); }
 
 async function apiGet(p){
   const r=await fetch(API_URL+'?'+new URLSearchParams(p).toString());
@@ -216,12 +231,17 @@ async function lookupDesdeCodigo(e){
   e.preventDefault();
   const code = (qs('#inpCodigo').value||'').trim();
   if(!code){ qs('#inpDesc').focus(); return; }
-  const it = await buscarStock(code);
-  if(it){
-    qs('#inpDesc').value = it.descripcion || '';
-    qs('#inpUnit').value = Number(it.precio||0);
+  showFinding();
+  try{
+    const it = await buscarStock(code);
+    if(it){
+      qs('#inpDesc').value = it.descripcion || '';
+      qs('#inpUnit').value = Number(it.precio||0);
+    }
+  } finally {
+    hideFinding();
+    qs('#inpDesc').focus();
   }
-  qs('#inpDesc').focus();
 }
 
 async function guardarVenta(){
@@ -323,11 +343,11 @@ function init(){
   const emp=getEmp();
   if(!emp.codigo){ showLogin(); } else { qs('#empName').textContent=emp.nombre; toggleAutorizados(); }
 
-  // Autofocus del login cuando se muestra (tu snippet)
+  // Autofocus del login cuando se muestra
   function focusLogin(){ setTimeout(()=>qs('#empCode').focus(), 120); }
   const modal = qs('#loginModal');
-  const obs = new MutationObserver(focusLogin);
-  obs.observe(modal, { attributes:true, attributeFilter:['class'] });
+  const mo = new MutationObserver(focusLogin);
+  mo.observe(modal, { attributes:true, attributeFilter:['class'] });
 
   cargarUltimas();
 }
