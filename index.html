@@ -3,13 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Emitir Comprobante v4 • Óptica Cristal</title>
+<title>Emitir Comprobante v5 • Óptica Cristal</title>
 <link rel="icon" href="logo.png" />
 <style>
-  :root{
-    --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --muted:#6b7280;
-    --blue:#2563eb; --green:#16a34a; --pill:#f9fafb;
-  }
+  :root{ --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --muted:#6b7280; --blue:#2563eb; --green:#16a34a; --pill:#f9fafb; }
   *{ box-sizing:border-box; font-family:system-ui,Segoe UI,Arial,sans-serif; }
   body{ margin:0; background:var(--bg); color:#111; }
   header{ display:flex; align-items:center; gap:14px; padding:10px 14px; background:#fff; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5;}
@@ -31,15 +28,20 @@
   .hidden{ display:none !important; }
   .modal{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50;}
   .modal .inner{ width:100%; max-width:420px; background:#fff; border-radius:14px; padding:18px; border:1px solid var(--line); text-align:center;}
+
   /* Mini loader */
   .spinner{ width:18px; height:18px; border:3px solid #e5e7eb; border-top-color:#2563eb; border-radius:50%; animation:sp .9s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px;}
   @keyframes sp{to{transform:rotate(360deg)}}
+
+  /* Bloque de dos medios */
+  .two-pay{ display:grid; grid-template-columns:150px 150px 150px 150px; gap:10px; margin-top:10px; }
+  @media (max-width:720px){ .two-pay{ grid-template-columns:1fr 1fr; } }
 </style>
 </head>
 <body>
 <header>
   <img src="logo.png" alt="Óptica Cristal">
-  <div class="title">Emitir Comprobante v4</div>
+  <div class="title">Emitir Comprobante v5</div>
   <div class="badge">📅 <span id="hoy"></span></div>
   <div class="badge">👤 <b id="empName">—</b></div>
   <button class="btn" id="btnCambiar">Cambiar empleado</button>
@@ -93,11 +95,48 @@
           <option>TARJETA DE CRÉDITO</option>
           <option>TARJETA DE DEBITO</option>
           <option>LINK DE PAGO</option>
+          <option value="__2__">2 MEDIOS DE PAGO</option>
         </select>
       </div>
       <div>
         <label style="visibility:hidden">—</label>
         <button class="btn blue" id="btnAgregar">Registrar venta</button>
+      </div>
+    </div>
+
+    <!-- Sección que SOLO aparece si se elige "2 MEDIOS DE PAGO" -->
+    <div id="twoPayBox" class="two-pay hidden">
+      <div>
+        <label>Forma de pago 1</label>
+        <select id="fdp1">
+          <option value="">— Elegir —</option>
+          <option>EFECTIVO</option>
+          <option>MERCADOPAGO</option>
+          <option>TRANSFERENCIA</option>
+          <option>TARJETA DE CRÉDITO</option>
+          <option>TARJETA DE DEBITO</option>
+          <option>LINK DE PAGO</option>
+        </select>
+      </div>
+      <div>
+        <label>Monto 1</label>
+        <input type="number" id="monto1" inputmode="decimal" placeholder="0">
+      </div>
+      <div>
+        <label>Forma de pago 2</label>
+        <select id="fdp2">
+          <option value="">— Elegir —</option>
+          <option>EFECTIVO</option>
+          <option>MERCADOPAGO</option>
+          <option>TRANSFERENCIA</option>
+          <option>TARJETA DE CRÉDITO</option>
+          <option>TARJETA DE DEBITO</option>
+          <option>LINK DE PAGO</option>
+        </select>
+      </div>
+      <div>
+        <label>Monto 2 (auto)</label>
+        <input type="number" id="monto2" inputmode="decimal" placeholder="0" readonly>
       </div>
     </div>
 
@@ -198,20 +237,11 @@ function setEmp(emp){
   qs('#empName').textContent = CURRENT_EMP.nombre || '—';
   toggleAutorizados();
 }
-function clearEmp(){
-  CURRENT_EMP = null;
-  qs('#empName').textContent = '—';
-  toggleAutorizados();
-}
+function clearEmp(){ CURRENT_EMP = null; qs('#empName').textContent = '—'; toggleAutorizados(); }
 function getEmp(){ return CURRENT_EMP; }
 
 /* ===== Login modal helpers ===== */
-function showLogin(){
-  clearEmp();
-  qs('#loginModal').classList.remove('hidden');
-  qs('#empCode').value = '';
-  qs('#loginMsg').textContent = '';
-}
+function showLogin(){ clearEmp(); qs('#loginModal').classList.remove('hidden'); qs('#empCode').value=''; qs('#loginMsg').textContent=''; setTimeout(()=>qs('#empCode').focus(),120); }
 function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
 
 /* ===== Otros modales ===== */
@@ -221,16 +251,10 @@ function showMov(){ qs('#movModal').classList.remove('hidden'); }
 function hideMov(){ qs('#movModal').classList.add('hidden'); }
 
 /* ===== API ===== */
-async function apiGet(p){
-  const r=await fetch(API_URL+'?'+new URLSearchParams(p).toString());
-  return r.json();
-}
-async function apiPost(payload){
-  const r=await fetch(API_URL,{method:'POST', body:JSON.stringify(payload)});
-  return r.json();
-}
+async function apiGet(p){ const r=await fetch(API_URL+'?'+new URLSearchParams(p).toString()); return r.json(); }
+async function apiPost(payload){ const r=await fetch(API_URL,{method:'POST', body:JSON.stringify(payload)}); return r.json(); }
 
-/* ===== UI ===== */
+/* ===== UI: últimas ventas, lookup ===== */
 let SAVING=false;
 function showSaving(){ Swal.fire({title:'Guardando…',allowOutsideClick:false,didOpen:()=>Swal.showLoading()}); }
 function closeSaving(){ Swal.close(); }
@@ -255,65 +279,83 @@ async function lookupDesdeCodigo(e){
   showFinding();
   try{
     const it = await buscarStock(code);
-    if(it){
-      qs('#inpDesc').value = it.descripcion || '';
-      qs('#inpUnit').value = Number(it.precio||0);
-    }
-  } finally {
-    hideFinding();
-    qs('#inpDesc').focus();
+    if(it){ qs('#inpDesc').value = it.descripcion || ''; qs('#inpUnit').value = Number(it.precio||0); recalcDosMedios(); }
+  } finally { hideFinding(); qs('#inpDesc').focus(); }
+}
+
+/* ===== Dos medios de pago ===== */
+function toggleTwoPay(){
+  const two = qs('#fdp').value === '__2__';
+  qs('#twoPayBox').classList.toggle('hidden', !two);
+  if(!two){
+    // limpiar si se oculta
+    qs('#fdp1').value=''; qs('#fdp2').value='';
+    qs('#monto1').value=''; qs('#monto2').value='';
+  }else{
+    // al mostrar, setear monto1=0 y monto2=total
+    const total = Number(qs('#inpUnit').value||0);
+    qs('#monto1').value = 0;
+    qs('#monto2').value = total;
   }
 }
 
-function limpiarCamposVenta(){
-  qs('#inpCodigo').value='';
-  qs('#inpDesc').value='';
-  qs('#inpUnit').value='';
-  qs('#inpRubro').value='';
-  qs('#fdp').value='';
-  qs('#obs').value='';
+function recalcDosMedios(){
+  if(qs('#fdp').value !== '__2__') return;
+  const total = Number(qs('#inpUnit').value||0);
+  let m1 = Number(qs('#monto1').value||0);
+  if(m1<0) m1 = 0;
+  if(m1>total) m1 = total;
+  qs('#monto1').value = m1;
+  qs('#monto2').value = Math.max(total - m1, 0);
 }
 
+function limpiarCamposVenta(){
+  qs('#inpCodigo').value=''; qs('#inpDesc').value=''; qs('#inpUnit').value='';
+  qs('#inpRubro').value=''; qs('#fdp').value=''; qs('#obs').value='';
+  toggleTwoPay(); // esto limpia los subcampos si corresponde
+}
+
+/* ===== Guardar venta ===== */
 async function guardarVenta(){
   if(SAVING) return;
-  const emp=getEmp(); 
-  if(!emp){ showLogin(); return; }
+  const emp=getEmp(); if(!emp){ showLogin(); return; }
 
   const codigo=(qs('#inpCodigo').value||'').trim();
   const rubro =qs('#inpRubro').value;
   const desc  =(qs('#inpDesc').value||'').trim();
-  const unit  =Number(qs('#inpUnit').value||0);
-  const fdp   =qs('#fdp').value;
+  const total =Number(qs('#inpUnit').value||0);
+  const fdpSel=qs('#fdp').value;
   const obs   =(qs('#obs').value||'').trim();
 
   if(!rubro){ Swal.fire('Falta rubro','Elegí un rubro.','warning'); qs('#inpRubro').focus(); return; }
-  if(!fdp){ Swal.fire('Falta forma de pago','Elegí la forma de pago.','warning'); qs('#fdp').focus(); return; }
-  if(!desc || unit<=0){ 
-    Swal.fire('Faltan datos','Completá descripción y precio > 0.','warning'); 
-    if(!desc) qs('#inpDesc').focus(); else qs('#inpUnit').focus(); 
-    return; 
-  }
+  if(!fdpSel){ Swal.fire('Falta forma de pago','Elegí la forma de pago.','warning'); qs('#fdp').focus(); return; }
+  if(!desc || total<=0){ Swal.fire('Faltan datos','Completá descripción y precio > 0.','warning'); if(!desc) qs('#inpDesc').focus(); else qs('#inpUnit').focus(); return; }
 
   const descFinal = `${rubro}: ${desc}`.trim();
 
+  // Armar payload
+  let payload = { action:'venta_add', empleadoCodigo: emp.codigo, numItem: codigo, precioItem: total, descripcion: descFinal, obs };
+
+  if(fdpSel !== '__2__'){
+    payload.fdp = fdpSel;
+    payload.monto = total;
+  }else{
+    const f1 = qs('#fdp1').value, f2 = qs('#fdp2').value;
+    const m1 = Number(qs('#monto1').value||0), m2 = Number(qs('#monto2').value||0);
+    if(!f1 || !f2){ Swal.fire('Faltan formas de pago','Elegí ambas formas.','warning'); return; }
+    if( Math.abs((m1+m2) - total) > 0.5 ){ Swal.fire('Montos inconsistentes','La suma de montos debe igualar el total.','warning'); return; }
+    payload.pagos = [{fdp:f1, monto:m1},{fdp:f2, monto:m2}];
+  }
+
   try{
     SAVING=true; qs('#btnAgregar').disabled=true; showSaving();
-    const res = await apiPost({
-      action:'venta_add',
-      empleadoCodigo: emp.codigo,
-      fdp, monto: unit,
-      numItem: codigo,
-      precioItem: unit,
-      descripcion: descFinal,
-      obs
-    });
+    const res = await apiPost(payload);
     qs('#btnAgregar').disabled=false; SAVING=false; closeSaving();
 
     if(res.ok){
       await cargarUltimas();
-      limpiarCamposVenta();             // A) limpiar todo
+      limpiarCamposVenta();
       Swal.fire({icon:'success', title:'Venta registrada', timer:900, showConfirmButton:false});
-      // volver a login y foco en código
       setTimeout(()=>{ showLogin(); }, 650);
     }else{
       Swal.fire('Error', res.error || 'No se pudo guardar.', 'error');
@@ -324,6 +366,7 @@ async function guardarVenta(){
   }
 }
 
+/* ===== Panel retiros / cierre ===== */
 function toggleAutorizados(){
   const emp=getEmp();
   const isAuth = !!(emp && WITHDRAW_AUTH.includes((emp.codigo||'').toUpperCase()));
@@ -331,29 +374,14 @@ function toggleAutorizados(){
 }
 
 async function registrarMov(){
-  const emp=getEmp(); 
-  if(!emp){ showLogin(); return; }
-
+  const emp=getEmp(); if(!emp){ showLogin(); return; }
   showMov();
   try{
-    const res=await apiPost({
-      action:'mov_add',
-      empleadoCodigo:emp.codigo,
-      tipo:qs('#tipoMov').value,
-      monto:Number(qs('#montoMov').value||0),
-      descripcion:qs('#descMov').value.trim()
-    });
-    if(res.ok){
-      qs('#montoMov').value=''; qs('#descMov').value='';
-      Swal.fire({icon:'success', title:'Movimiento registrado', timer:1100, showConfirmButton:false});
-    }else{
-      Swal.fire('Error', res.error||'No se pudo guardar el movimiento','error');
-    }
-  }catch(e){
-    Swal.fire('Error de red', e.message||'Falló la conexión','error');
-  }finally{
-    hideMov();
-  }
+    const res=await apiPost({action:'mov_add', empleadoCodigo:emp.codigo, tipo:qs('#tipoMov').value, monto:Number(qs('#montoMov').value||0), descripcion:qs('#descMov').value.trim()});
+    if(res.ok){ qs('#montoMov').value=''; qs('#descMov').value=''; Swal.fire({icon:'success', title:'Movimiento registrado', timer:1100, showConfirmButton:false}); }
+    else{ Swal.fire('Error', res.error||'No se pudo guardar el movimiento','error'); }
+  }catch(e){ Swal.fire('Error de red', e.message||'Falló la conexión','error'); }
+  finally{ hideMov(); }
 }
 
 async function generarCierre(){
@@ -369,6 +397,7 @@ async function generarCierre(){
   }catch(e){ Swal.close(); Swal.fire('Error de red', e.message||'Falló la conexión','error'); }
 }
 
+/* ===== Login ===== */
 async function doLogin(){
   const code=(qs('#empCode').value||'').trim().toUpperCase();
   if(!code) return;
@@ -379,6 +408,7 @@ async function doLogin(){
   else { m.textContent=r.error||'Código inválido'; }
 }
 
+/* ===== Init ===== */
 function init(){
   const d=new Date();
   qs('#hoy').textContent=d.toLocaleDateString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
@@ -386,9 +416,12 @@ function init(){
 
   qs('#inpCodigo').addEventListener('keydown', lookupDesdeCodigo);
   qs('#inpDesc').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); qs('#inpUnit').focus(); }});
-  qs('#inpUnit').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); guardarVenta(); }});
-  qs('#btnAgregar').onclick = guardarVenta;
+  qs('#inpUnit').addEventListener('input', recalcDosMedios);
 
+  qs('#fdp').addEventListener('change', ()=>{ toggleTwoPay(); recalcDosMedios(); });
+  qs('#monto1').addEventListener('input', recalcDosMedios);
+
+  qs('#btnAgregar').onclick = guardarVenta;
   qs('#btnMov').onclick = registrarMov;
   qs('#btnCierre').onclick = generarCierre;
 
@@ -396,14 +429,12 @@ function init(){
   qs('#empCode').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doLogin(); }});
   qs('#btnCambiar').onclick=showLogin;
 
-  // SIEMPRE arrancar en login (sin empleado guardado)
+  // SIEMPRE arrancar en login
   showLogin();
 
-  // Autofocus en login cuando se muestra
-  function focusLogin(){ setTimeout(()=>qs('#empCode').focus(), 120); }
+  // Autofocus login
   const modal = qs('#loginModal');
-  const mo = new MutationObserver(focusLogin);
-  mo.observe(modal, { attributes:true, attributeFilter:['class'] });
+  new MutationObserver(()=>setTimeout(()=>qs('#empCode').focus(),120)).observe(modal,{attributes:true,attributeFilter:['class']});
 
   cargarUltimas();
 }
