@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Emitir Comprobante v5 • Óptica Cristal</title>
+<title>Emitir Comprobante v6 • Óptica Cristal</title>
 <link rel="icon" href="logo.png" />
 <style>
   :root{ --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --muted:#6b7280; --blue:#2563eb; --green:#16a34a; --pill:#f9fafb; }
@@ -26,14 +26,14 @@
   .pill{ background:var(--pill); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:13px; }
   .muted{ color:var(--muted); }
   .hidden{ display:none !important; }
+
+  /* Modales */
   .modal{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50;}
   .modal .inner{ width:100%; max-width:420px; background:#fff; border-radius:14px; padding:18px; border:1px solid var(--line); text-align:center;}
-
-  /* Mini loader */
   .spinner{ width:18px; height:18px; border:3px solid #e5e7eb; border-top-color:#2563eb; border-radius:50%; animation:sp .9s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px;}
   @keyframes sp{to{transform:rotate(360deg)}}
 
-  /* Bloque de dos medios */
+  /* Bloque de 2 medios */
   .two-pay{ display:grid; grid-template-columns:150px 150px 150px 150px; gap:10px; margin-top:10px; }
   @media (max-width:720px){ .two-pay{ grid-template-columns:1fr 1fr; } }
 </style>
@@ -41,7 +41,7 @@
 <body>
 <header>
   <img src="logo.png" alt="Óptica Cristal">
-  <div class="title">Emitir Comprobante v5</div>
+  <div class="title">Emitir Comprobante v6</div>
   <div class="badge">📅 <span id="hoy"></span></div>
   <div class="badge">👤 <b id="empName">—</b></div>
   <button class="btn" id="btnCambiar">Cambiar empleado</button>
@@ -104,7 +104,7 @@
       </div>
     </div>
 
-    <!-- Sección que SOLO aparece si se elige "2 MEDIOS DE PAGO" -->
+    <!-- Solo aparece si se elige "2 MEDIOS DE PAGO" -->
     <div id="twoPayBox" class="two-pay hidden">
       <div>
         <label>Forma de pago 1</label>
@@ -230,7 +230,7 @@ const WITHDRAW_AUTH = ['JU','JI'];
 const qs = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Number(n||0));
 
-/* ===== Empleado en MEMORIA (no persistir) ===== */
+/* ===== Empleado solo en MEMORIA (no persiste) ===== */
 let CURRENT_EMP = null;
 function setEmp(emp){
   CURRENT_EMP = { codigo: String(emp.codigo||'').toUpperCase(), nombre: emp.nombre||'' };
@@ -240,11 +240,9 @@ function setEmp(emp){
 function clearEmp(){ CURRENT_EMP = null; qs('#empName').textContent = '—'; toggleAutorizados(); }
 function getEmp(){ return CURRENT_EMP; }
 
-/* ===== Login modal helpers ===== */
+/* ===== Modales ===== */
 function showLogin(){ clearEmp(); qs('#loginModal').classList.remove('hidden'); qs('#empCode').value=''; qs('#loginMsg').textContent=''; setTimeout(()=>qs('#empCode').focus(),120); }
 function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
-
-/* ===== Otros modales ===== */
 function showFinding(){ qs('#findModal').classList.remove('hidden'); }
 function hideFinding(){ qs('#findModal').classList.add('hidden'); }
 function showMov(){ qs('#movModal').classList.remove('hidden'); }
@@ -254,7 +252,7 @@ function hideMov(){ qs('#movModal').classList.add('hidden'); }
 async function apiGet(p){ const r=await fetch(API_URL+'?'+new URLSearchParams(p).toString()); return r.json(); }
 async function apiPost(payload){ const r=await fetch(API_URL,{method:'POST', body:JSON.stringify(payload)}); return r.json(); }
 
-/* ===== UI: últimas ventas, lookup ===== */
+/* ===== Últimas / Lookup ===== */
 let SAVING=false;
 function showSaving(){ Swal.fire({title:'Guardando…',allowOutsideClick:false,didOpen:()=>Swal.showLoading()}); }
 function closeSaving(){ Swal.close(); }
@@ -283,22 +281,19 @@ async function lookupDesdeCodigo(e){
   } finally { hideFinding(); qs('#inpDesc').focus(); }
 }
 
-/* ===== Dos medios de pago ===== */
+/* ===== Dos medios de pago (UI) ===== */
 function toggleTwoPay(){
   const two = qs('#fdp').value === '__2__';
   qs('#twoPayBox').classList.toggle('hidden', !two);
   if(!two){
-    // limpiar si se oculta
     qs('#fdp1').value=''; qs('#fdp2').value='';
     qs('#monto1').value=''; qs('#monto2').value='';
   }else{
-    // al mostrar, setear monto1=0 y monto2=total
     const total = Number(qs('#inpUnit').value||0);
     qs('#monto1').value = 0;
     qs('#monto2').value = total;
   }
 }
-
 function recalcDosMedios(){
   if(qs('#fdp').value !== '__2__') return;
   const total = Number(qs('#inpUnit').value||0);
@@ -309,13 +304,19 @@ function recalcDosMedios(){
   qs('#monto2').value = Math.max(total - m1, 0);
 }
 
+/* ===== Helpers ===== */
 function limpiarCamposVenta(){
   qs('#inpCodigo').value=''; qs('#inpDesc').value=''; qs('#inpUnit').value='';
   qs('#inpRubro').value=''; qs('#fdp').value=''; qs('#obs').value='';
-  toggleTwoPay(); // esto limpia los subcampos si corresponde
+  toggleTwoPay(); // limpia subcampos si corresponde
 }
 
-/* ===== Guardar venta ===== */
+/* ===== Guardar venta =====
+   - Pago simple: 1 POST (como siempre)
+   - 2 medios: 2 POST seguidos con el MISMO producto/desc:
+        #1 -> fdp1, monto1,  precioItem = total
+        #2 -> fdp2, monto2,  precioItem = 0
+*/
 async function guardarVenta(){
   if(SAVING) return;
   const emp=getEmp(); if(!emp){ showLogin(); return; }
@@ -333,36 +334,65 @@ async function guardarVenta(){
 
   const descFinal = `${rubro}: ${desc}`.trim();
 
-  // Armar payload
-  let payload = { action:'venta_add', empleadoCodigo: emp.codigo, numItem: codigo, precioItem: total, descripcion: descFinal, obs };
-
-  if(fdpSel !== '__2__'){
-    payload.fdp = fdpSel;
-    payload.monto = total;
-  }else{
-    const f1 = qs('#fdp1').value, f2 = qs('#fdp2').value;
-    const m1 = Number(qs('#monto1').value||0), m2 = Number(qs('#monto2').value||0);
-    if(!f1 || !f2){ Swal.fire('Faltan formas de pago','Elegí ambas formas.','warning'); return; }
-    if( Math.abs((m1+m2) - total) > 0.5 ){ Swal.fire('Montos inconsistentes','La suma de montos debe igualar el total.','warning'); return; }
-    payload.pagos = [{fdp:f1, monto:m1},{fdp:f2, monto:m2}];
-  }
-
   try{
     SAVING=true; qs('#btnAgregar').disabled=true; showSaving();
-    const res = await apiPost(payload);
-    qs('#btnAgregar').disabled=false; SAVING=false; closeSaving();
 
-    if(res.ok){
-      await cargarUltimas();
-      limpiarCamposVenta();
-      Swal.fire({icon:'success', title:'Venta registrada', timer:900, showConfirmButton:false});
-      setTimeout(()=>{ showLogin(); }, 650);
+    if(fdpSel !== '__2__'){
+      // 1 solo pago
+      const res = await apiPost({
+        action:'venta_add',
+        empleadoCodigo: emp.codigo,
+        fdp: fdpSel,
+        monto: total,
+        numItem: codigo,
+        precioItem: total,
+        descripcion: descFinal,
+        obs
+      });
+      if(!res.ok) throw new Error(res.error||'No se pudo guardar.');
     }else{
-      Swal.fire('Error', res.error || 'No se pudo guardar.', 'error');
+      // 2 pagos -> dos filas
+      const f1 = qs('#fdp1').value, f2 = qs('#fdp2').value;
+      const m1 = Number(qs('#monto1').value||0), m2 = Number(qs('#monto2').value||0);
+      if(!f1 || !f2){ throw new Error('Elegí ambas formas de pago.'); }
+      if( Math.abs((m1+m2) - total) > 0.5 ){ throw new Error('La suma de montos debe igualar el total.'); }
+
+      // POST #1: con total
+      const r1 = await apiPost({
+        action:'venta_add',
+        empleadoCodigo: emp.codigo,
+        fdp: f1,
+        monto: m1,
+        numItem: codigo,
+        precioItem: total,        // << total sólo en la primera fila
+        descripcion: descFinal,
+        obs
+      });
+      if(!r1.ok) throw new Error(r1.error||'No se pudo guardar el primer pago.');
+
+      // POST #2: sin total
+      const r2 = await apiPost({
+        action:'venta_add',
+        empleadoCodigo: emp.codigo,
+        fdp: f2,
+        monto: m2,
+        numItem: codigo,
+        precioItem: 0,            // << segunda fila con 0 en precioItem
+        descripcion: descFinal,
+        obs
+      });
+      if(!r2.ok) throw new Error(r2.error||'No se pudo guardar el segundo pago.');
     }
+
+    qs('#btnAgregar').disabled=false; SAVING=false; closeSaving();
+    await cargarUltimas();
+    limpiarCamposVenta();
+    Swal.fire({icon:'success', title:'Venta registrada', timer:900, showConfirmButton:false});
+    setTimeout(()=>{ showLogin(); }, 650);
+
   }catch(e){
     qs('#btnAgregar').disabled=false; SAVING=false; closeSaving();
-    Swal.fire('Error de red', e.message||'Falló la conexión', 'error');
+    Swal.fire('Error', e.message||'No se pudo guardar.', 'error');
   }
 }
 
@@ -372,7 +402,6 @@ function toggleAutorizados(){
   const isAuth = !!(emp && WITHDRAW_AUTH.includes((emp.codigo||'').toUpperCase()));
   qs('#panelRetiros').classList.toggle('hidden', !isAuth);
 }
-
 async function registrarMov(){
   const emp=getEmp(); if(!emp){ showLogin(); return; }
   showMov();
@@ -383,7 +412,6 @@ async function registrarMov(){
   }catch(e){ Swal.fire('Error de red', e.message||'Falló la conexión','error'); }
   finally{ hideMov(); }
 }
-
 async function generarCierre(){
   const emp=getEmp(); if(!emp){ showLogin(); return; }
   if(!WITHDRAW_AUTH.includes(emp.codigo)){ Swal.fire('No autorizado','','warning'); return; }
@@ -432,7 +460,7 @@ function init(){
   // SIEMPRE arrancar en login
   showLogin();
 
-  // Autofocus login
+  // Autofocus del login cuando se muestra
   const modal = qs('#loginModal');
   new MutationObserver(()=>setTimeout(()=>qs('#empCode').focus(),120)).observe(modal,{attributes:true,attributeFilter:['class']});
 
