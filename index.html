@@ -457,6 +457,14 @@ function init(){
   qs('#empCode').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doLogin(); }});
   qs('#btnCambiar').onclick=showLogin;
 
+  // ===== Atajo de teclado: F9 para guardar =====
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'F9' || e.keyCode === 120) { // compat
+      e.preventDefault();
+      guardarVenta();
+    }
+  });
+
   // SIEMPRE arrancar en login
   showLogin();
 
