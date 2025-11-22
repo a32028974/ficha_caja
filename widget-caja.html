@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>EFECTIVO EN CAJA HOY</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg:#020617;
+      --card:#0f172a;
+      --accent:#22c55e;
+      --danger:#ef4444;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+    }
+    *{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    body{
+      margin:0;
+      background:transparent;
+      color:var(--text);
+    }
+    .wrap{
+      padding:10px;
+      max-width:260px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      padding:14px;
+      box-shadow:0 8px 20px rgba(15,23,42,.6);
+      border:1px solid rgba(148,163,184,.4);
+    }
+    h1{
+      margin:0 0 8px;
+      font-size:14px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .amount{
+      font-size:26px;
+      font-weight:700;
+      margin-bottom:4px;
+    }
+    .amount.ok{color:var(--accent);}
+    .amount.low{color:var(--danger);}
+    .label{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      margin-top:6px;
+    }
+    .row{
+      display:flex;
+      justify-content:space-between;
+      font-size:12px;
+      margin-top:2px;
+    }
+    .row span:first-child{color:var(--muted);}
+    .small{font-size:11px;color:var(--muted);margin-top:8px;}
+    button{
+      margin-top:8px;
+      width:100%;
+      padding:6px 10px;
+      font-size:12px;
+      border-radius:999px;
+      border:none;
+      background:#1d4ed8;
+      color:white;
+      cursor:pointer;
+    }
+    button:hover{background:#1e40af;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>EFECTIVO EN CAJA</h1>
+      <div id="amount" class="amount">--</div>
+      <div class="label">Detalle de hoy</div>
+      <div class="row">
+        <span>Ventas en efectivo</span>
+        <span id="ventas">--</span>
+      </div>
+      <div class="row">
+        <span>Retiros en efectivo</span>
+        <span id="retiros">--</span>
+      </div>
+      <div class="small" id="status">Cargando...</div>
+      <button id="refreshBtn">Actualizar ahora</button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyF1DZEU8063o2R7Q2FJn_0HIMrJvEv0Ttka1C44lxoHXQKwNM2oJ1CpzGMUieZ0HJ8Ow/exec';
+
+    function formatMoney(n){
+      return '$ ' + n.toLocaleString('es-AR', {maximumFractionDigits:0});
+    }
+
+    async function cargarCaja(){
+      const status = document.getElementById('status');
+      status.textContent = 'Actualizando...';
+      try{
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        if(!data.ok){
+          status.textContent = 'Error: ' + (data.error || 'sin detalle');
+          return;
+        }
+        const monto = data.efectivoDisponible || 0;
+        const ventas = data.totalEfectivoVentas || 0;
+        const retiros = data.totalRetirosEfectivo || 0;
+
+        const amount = document.getElementById('amount');
+        amount.textContent = formatMoney(monto);
+        amount.className = 'amount ' + (monto > 0 ? 'ok' : 'low');
+
+        document.getElementById('ventas').textContent  = formatMoney(ventas);
+        document.getElementById('retiros').textContent = formatMoney(retiros);
+
+        const ahora = new Date();
+        status.textContent = 'Actualizado ' +
+          ahora.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+      } catch(err){
+        status.textContent = 'Error de red';
+        console.error(err);
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', cargarCaja);
+
+    // Primera carga
+    cargarCaja();
+    // Actualiza solo cada 60 segundos
+    setInterval(cargarCaja, 60000);
+  </script>
+</body>
+</html>
