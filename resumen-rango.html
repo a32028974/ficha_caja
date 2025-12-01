@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>v 1 Resumen Mensual • Óptica Cristal</title> 
+<title>Resumen Mensual • Óptica Cristal</title> 
 <link rel="icon" href="logo.png" />
 <style>
   :root{
@@ -95,7 +95,7 @@
   }
   @keyframes sp{ to{ transform:rotate(360deg); } }
 
-  /* Estilos para IMPRESIÓN */
+  /* Estilos para IMPRESIÓN (ocultan los botones y filtros) */
   @media print {
     body{ background: #fff; }
     .wrap{ padding-top: 0; }
@@ -122,10 +122,12 @@
 <body>
 <header>
   <img src="logo.png" alt="Óptica Cristal">
-  <div class="title">Resumen Mensual</div>   <div class="badge">📅 <span id="hoy"></span></div>
+  <div class="title">Resumen Mensual</div>
+  <div class="badge">📅 <span id="hoy"></span></div>
   <div class="badge">👤 <b id="empName">—</b></div>
   <button class="btn" id="btnCambiar">Cambiar empleado</button>
-  <button class="btn btn-print" id="btnPrint" style="background:var(--green); color:#fff; border-color:var(--green); margin-left: 10px;">🖨️ Imprimir</button> </header>
+  <button class="btn btn-print" id="btnPrint" style="background:var(--green); color:#fff; border-color:var(--green); margin-left: 10px;">🖨️ Imprimir</button>
+</header>
 
 <div class="wrap">
 
@@ -200,7 +202,7 @@
     <div class="spinner"></div>
     <b>Calculando resumen…</b>
     <p class="muted" style="margin:8px 0 0">Consultando Caja y Ventas</p>
-  </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -374,6 +376,7 @@ async function generarResumen(){
 /* ===== Funciones de Fechas y Init ===== */
 
 function obtenerRangoMesAnterior(fechaHoy) {
+    // La fecha del PDF es '01/12/2025', la usamos para calcular el rango por defecto (Noviembre)
     const hoy = new Date(fechaHoy);
     // Establecer el primer día del mes actual
     const primerDiaMesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -382,7 +385,7 @@ function obtenerRangoMesAnterior(fechaHoy) {
     const ultimoDiaMesAnterior = new Date(primerDiaMesActual.getTime());
     ultimoDiaMesAnterior.setDate(ultimoDiaMesAnterior.getDate() - 1);
 
-    // Establecer el primer día del mes anterior (sustituyendo el día por 1)
+    // Establecer el primer día del mes anterior
     const primerDiaMesAnterior = new Date(ultimoDiaMesAnterior.getFullYear(), ultimoDiaMesAnterior.getMonth(), 1);
 
     // Formatear a YYYY-MM-DD
@@ -396,12 +399,12 @@ function obtenerRangoMesAnterior(fechaHoy) {
 
 
 function init(){
-  const d = new Date();
+  const d = new Date('2025-12-01'); // Usamos la fecha del PDF como referencia para la UI
   qs('#hoy').textContent = d.toLocaleDateString('es-AR',{
     weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'
   });
 
-  // USAR LA FECHA DE REFERENCIA (01/12/2025) para que el rango por defecto sea el MES ANTERIOR (Noviembre)
+  // Establecer rango por defecto al MES ANTERIOR
   const hoyDeReferencia = '2025-12-01'; 
   const rango = obtenerRangoMesAnterior(hoyDeReferencia);
   qs('#desde').value = rango.desde;
@@ -416,7 +419,7 @@ function init(){
   });
 
   qs('#btnResumen').onclick = generarResumen;
-  qs('#btnPrint').onclick = () => window.print(); // Función para imprimir añadida
+  qs('#btnPrint').onclick = () => window.print(); // Función para imprimir
 
   // abrir login al inicio
   showLogin();
