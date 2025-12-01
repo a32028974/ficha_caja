@@ -95,7 +95,7 @@
   }
   @keyframes sp{ to{ transform:rotate(360deg); } }
 
-  /* Estilos para IMPRESIÓN */
+  /* Estilos para IMPRESIÓN (ocultan los botones y filtros) */
   @media print {
     body{ background: #fff; }
     .wrap{ padding-top: 0; }
@@ -137,7 +137,6 @@
       <div>
         <label>Desde</label>
         <input type="date" id="desde">
-        
       </div>
       <div>
         <label>Hasta</label>
@@ -383,7 +382,7 @@ function obtenerRangoMesAnterior(fechaHoy) {
     
     // Establecer el último día del mes anterior (restar 1 día al primer día del mes actual)
     const ultimoDiaMesAnterior = new Date(primerDiaMesActual.getTime());
-    ultimoDiaMesAnterior.setDate(ultimoDiaMesAnterior.getDate() - 1);
+    ultimoDiaMesAnterior.setDate(ultimoDiaMesActual.getDate() - 1);
 
     // Establecer el primer día del mes anterior (sustituyendo el día por 1)
     const primerDiaMesAnterior = new Date(ultimoDiaMesAnterior.getFullYear(), ultimoDiaMesAnterior.getMonth(), 1);
@@ -404,7 +403,8 @@ function init(){
     weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'
   });
 
-  // Usamos la fecha del PDF para iniciar el rango del mes anterior (Noviembre)
+  // Establecer rango por defecto al MES ANTERIOR
+  // Usamos la fecha del PDF (01/12/2025) como referencia para que el rango sea Noviembre.
   const hoyDeReferencia = '2025-12-01'; 
   const rango = obtenerRangoMesAnterior(hoyDeReferencia);
   qs('#desde').value = rango.desde;
