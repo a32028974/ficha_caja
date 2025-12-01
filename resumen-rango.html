@@ -3,216 +3,235 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Resumen por rango de fechas • Óptica Cristal</title>
+<title>Resumen Mensual • Óptica Cristal</title>
 <link rel="icon" href="logo.png" />
 <style>
-  :root{
-    --bg:#f5f6f8;
-    --panel:#fff;
-    --line:#e5e7eb;
-    --muted:#6b7280;
-    --blue:#2563eb;
-    --green:#16a34a;
-    --pill:#f9fafb;
-  }
-  *{ box-sizing:border-box; font-family:system-ui,Segoe UI,Arial,sans-serif; }
-  body{ margin:0; background:var(--bg); color:#111; }
-  header{
-    display:flex; align-items:center; gap:14px;
-    padding:10px 14px; background:#fff;
-    border-bottom:1px solid var(--line);
-    position:sticky; top:0; z-index:5;
-  }
-  header img{ height:42px; }
-  .title{ font-weight:700; font-size:20px; margin-right:auto; }
-  .badge{ border:1px solid var(--line); background:#fff; padding:6px 10px; border-radius:999px; font-size:13px; }
-  .wrap{ max-width:1100px; margin:18px auto; padding:0 14px 40px; }
-  .card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; margin:12px 0; }
-  h3{ margin:6px 0 10px; font-size:16px; }
-  label{ display:block; font-size:12px; color:var(--muted); margin:6px 0 4px; }
-  input, select{
-    width:100%; padding:9px 10px;
-    border:1px solid #d1d5db; border-radius:10px;
-    font-size:14px;
-  }
-  .rowFilter{
-    display:grid;
-    grid-template-columns:150px 150px 1fr;
-    gap:10px;
-    align-items:end;
-  }
-  @media(max-width:700px){
-    .rowFilter{ grid-template-columns:1fr; }
-  }
-  .btn{
-    padding:9px 13px; border-radius:10px;
-    border:1px solid #d1d5db;
-    background:#fff; cursor:pointer;
-    font-size:14px;
-  }
-  .btn.blue{ background:var(--blue); color:#fff; border-color:var(--blue); }
-  .pill{
-    background:var(--pill);
-    border:1px solid var(--line);
-    padding:6px 10px;
-    border-radius:999px;
-    font-size:13px;
-    display:inline-flex;
-    justify-content:space-between;
-    gap:10px;
-    width:100%;
-  }
-  .muted{ color:var(--muted); font-size:13px; }
-  .grid2{
-    display:grid; grid-template-columns:1fr 1fr; gap:10px;
-  }
-  @media(max-width:800px){ .grid2{ grid-template-columns:1fr; } }
+  :root{
+    --bg:#f5f6f8;
+    --panel:#fff;
+    --line:#e5e7eb;
+    --muted:#6b7280;
+    --blue:#2563eb;
+    --green:#16a34a;
+    --pill:#f9fafb;
+  }
+  *{ box-sizing:border-box; font-family:system-ui,Segoe UI,Arial,sans-serif; }
+  body{ margin:0; background:var(--bg); color:#111; }
+  header{
+    display:flex; align-items:center; gap:14px;
+    padding:10px 14px; background:#fff;
+    border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:5;
+  }
+  header img{ height:42px; }
+  .title{ font-weight:700; font-size:20px; margin-right:auto; }
+  .badge{ border:1px solid var(--line); background:#fff; padding:6px 10px; border-radius:999px; font-size:13px; }
+  .wrap{ max-width:1100px; margin:18px auto; padding:0 14px 40px; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; margin:12px 0; }
+  h3{ margin:6px 0 10px; font-size:16px; }
+  label{ display:block; font-size:12px; color:var(--muted); margin:6px 0 4px; }
+  input, select{
+    width:100%; padding:9px 10px;
+    border:1px solid #d1d5db; border-radius:10px;
+    font-size:14px;
+  }
+  .rowFilter{
+    display:grid;
+    grid-template-columns:150px 150px 1fr;
+    gap:10px;
+    align-items:end;
+  }
+  @media(max-width:700px){
+    .rowFilter{ grid-template-columns:1fr; }
+  }
+  .btn{
+    padding:9px 13px; border-radius:10px;
+    border:1px solid #d1d5db;
+    background:#fff; cursor:pointer;
+    font-size:14px;
+  }
+  .btn.blue{ background:var(--blue); color:#fff; border-color:var(--blue); }
+  .pill{
+    background:var(--pill);
+    border:1px solid var(--line);
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:13px;
+    display:inline-flex;
+    justify-content:space-between;
+    gap:10px;
+    width:100%;
+  }
+  .muted{ color:var(--muted); font-size:13px; }
+  .grid2{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  }
+  @media(max-width:800px){ .grid2{ grid-template-columns:1fr; } }
 
-  .list{ margin-top:6px; display:flex; flex-direction:column; gap:6px; }
-  .pill key{ font-weight:500; }
-  .pill span{ white-space:nowrap; }
+  .list{ margin-top:6px; display:flex; flex-direction:column; gap:6px; }
+  .pill key{ font-weight:500; }
+  .pill span{ white-space:nowrap; }
 
-  .hidden{ display:none !important; }
+  .hidden{ display:none !important; }
 
-  .modal{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,.5);
-    display:flex; align-items:center; justify-content:center;
-    z-index:50;
-  }
-  .modal .inner{
-    width:100%; max-width:420px;
-    background:#fff; border-radius:14px;
-    padding:18px; border:1px solid var(--line);
-    text-align:center;
-  }
-  .spinner{
-    width:18px; height:18px;
-    border:3px solid #e5e7eb; border-top-color:#2563eb;
-    border-radius:50%;
-    animation:sp .9s linear infinite;
-    display:inline-block; margin-right:8px; vertical-align:middle;
-  }
-  @keyframes sp{ to{ transform:rotate(360deg); } }
+  .modal{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.5);
+    display:flex; align-items:center; justify-content:center;
+    z-index:50;
+  }
+  .modal .inner{
+    width:100%; max-width:420px;
+    background:#fff; border-radius:14px;
+    padding:18px; border:1px solid var(--line);
+    text-align:center;
+  }
+  .spinner{
+    width:18px; height:18px;
+    border:3px solid #e5e7eb; border-top-color:#2563eb;
+    border-radius:50%;
+    animation:sp .9s linear infinite;
+    display:inline-block; margin-right:8px; vertical-align:middle;
+  }
+  @keyframes sp{ to{ transform:rotate(360deg); } }
+
+  /* Estilos para IMPRESIÓN */
+  @media print {
+    body{ background: #fff; }
+    .wrap{ padding-top: 0; }
+    header, .card:first-child, .btn-print, #loginModal, #loadModal {
+        display: none !important;
+    }
+    .card{ 
+        border: none; 
+        box-shadow: none; 
+        padding: 0; 
+        margin: 0;
+    }
+    .pill {
+        border: 1px solid #ccc;
+    }
+    h3 {
+        margin-top: 20px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+    }
+  }
 </style>
 </head>
 <body>
 <header>
-  <img src="logo.png" alt="Óptica Cristal">
-  <div class="title">Resumen por rango de fechas</div>
-  <div class="badge">📅 <span id="hoy"></span></div>
-  <div class="badge">👤 <b id="empName">—</b></div>
-  <button class="btn" id="btnCambiar">Cambiar empleado</button>
+  <img src="logo.png" alt="Óptica Cristal">
+  <div class="title">Resumen Mensual</div>
+  <div class="badge">📅 <span id="hoy"></span></div>
+  <div class="badge">👤 <b id="empName">—</b></div>
+  <button class="btn" id="btnCambiar">Cambiar empleado</button>
+  <button class="btn btn-print" id="btnPrint" style="background:var(--green); color:#fff; border-color:var(--green); margin-left: 10px;">🖨️ Imprimir</button>
 </header>
 
 <div class="wrap">
 
-  <!-- Filtros -->
-  <section class="card">
-    <h3>Elegir periodo</h3>
-    <div class="rowFilter">
-      <div>
-        <label>Desde</label>
-        <input type="date" id="desde">
-      </div>
-      <div>
-        <label>Hasta</label>
-        <input type="date" id="hasta">
-      </div>
-      <div>
-        <button class="btn blue" id="btnResumen">Generar resumen</button>
-        <p class="muted" id="msgPeriodo" style="margin-top:6px"></p>
-      </div>
-    </div>
-  </section>
+    <section class="card">
+    <h3>Elegir periodo</h3>
+    <div class="rowFilter">
+      <div>
+        <label>Desde</label>
+        <input type="date" id="desde">
+      </div>
+      <div>
+        <label>Hasta</label>
+        <input type="date" id="hasta">
+      </div>
+      <div>
+        <button class="btn blue" id="btnResumen">Generar resumen</button>
+        <p class="muted" id="msgPeriodo" style="margin-top:6px"></p>
+      </div>
+    </div>
+  </section>
 
-  <!-- Resumen general -->
-  <section class="card">
-    <h3>Resumen general</h3>
-    <div id="resumenGeneral" class="muted">Elegí un rango y presioná "Generar resumen".</div>
-  </section>
+    <section class="card">
+    <h3>Resumen general</h3>
+    <div id="resumenGeneral" class="muted">Elegí un rango y presioná "Generar resumen".</div>
+  </section>
 
-  <!-- Detalles -->
-  <section class="card">
-    <h3>Detalle de ventas</h3>
-    <div class="grid2">
-      <div>
-        <h4 style="margin:0 0 6px; font-size:14px;">Por forma de pago</h4>
-        <div id="resFdp" class="muted">—</div>
-      </div>
-      <div>
-        <h4 style="margin:0 0 6px; font-size:14px;">Por rubro</h4>
-        <div id="resRubro" class="muted">—</div>
-      </div>
-    </div>
-  </section>
+    <section class="card">
+    <h3>Detalle de ventas</h3>
+    <div class="grid2">
+      <div>
+        <h4 style="margin:0 0 6px; font-size:14px;">Por forma de pago</h4>
+        <div id="resFdp" class="muted">—</div>
+      </div>
+      <div>
+        <h4 style="margin:0 0 6px; font-size:14px;">Por rubro</h4>
+        <div id="resRubro" class="muted">—</div>
+      </div>
+    </div>
+  </section>
 
-  <section class="card">
-    <h3>Movimientos y balance</h3>
-    <div class="grid2">
-      <div>
-        <h4 style="margin:0 0 6px; font-size:14px;">Movimientos</h4>
-        <div id="resMov" class="muted">—</div>
-      </div>
-      <div>
-        <h4 style="margin:0 0 6px; font-size:14px;">Balance</h4>
-        <div id="resBalance" class="muted">—</div>
-      </div>
-    </div>
-  </section>
+  <section class="card">
+    <h3>Movimientos y balance</h3>
+    <div class="grid2">
+      <div>
+        <h4 style="margin:0 0 6px; font-size:14px;">Movimientos</h4>
+        <div id="resMov" class="muted">—</div>
+      </div>
+      <div>
+        <h4 style="margin:0 0 6px; font-size:14px;">Balance</h4>
+        <div id="resBalance" class="muted">—</div>
+      </div>
+    </div>
+  </section>
 
 </div>
 
-<!-- Modal LOGIN -->
 <div class="modal" id="loginModal">
-  <div class="inner">
-    <h3>Ingresar empleado</h3>
-    <p class="muted">Escribí tu <b>código</b></p>
-    <label>Código de empleado</label>
-    <input id="empCode" placeholder="">
-    <div style="display:flex; justify-content:flex-end; margin-top:12px;">
-      <button class="btn" id="btnLogin">Entrar</button>
-    </div>
-    <p id="loginMsg" class="muted"></p>
-  </div>
+  <div class="inner">
+    <h3>Ingresar empleado</h3>
+    <p class="muted">Escribí tu <b>código</b></p>
+    <label>Código de empleado</label>
+    <input id="empCode" placeholder="">
+    <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+      <button class="btn" id="btnLogin">Entrar</button>
+    </div>
+    <p id="loginMsg" class="muted"></p>
+  </div>
 </div>
 
-<!-- Modal loading -->
 <div class="modal hidden" id="loadModal" aria-hidden="true">
-  <div class="inner" style="max-width:360px;">
-    <div class="spinner"></div>
-    <b>Calculando resumen…</b>
-    <p class="muted" style="margin:8px 0 0">Consultando Caja y Ventas</p>
-  </div>
+  <div class="inner" style="max-width:360px;">
+    <div class="spinner"></div>
+    <b>Calculando resumen…</b>
+    <p class="muted" style="margin:8px 0 0">Consultando Caja y Ventas</p>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 // === CONFIGURAR CON TU URL ACTUAL DE CAJA ===
 const API_URL = 'https://script.google.com/macros/s/AKfycbypXquhlgS_gRZMnYmkNePhsjBn3WZkVfzlZNZhswGwPk3J97snc6GpDu9Vwofh6LemCg/exec';
-const WITHDRAW_AUTH = ['JU','JI'];  // quienes pueden ver el resumen
+const WITHDRAW_AUTH = ['JU','JI'];  // quienes pueden ver el resumen
 
 const qs = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('es-AR',{
-  style:'currency', currency:'ARS', maximumFractionDigits:0
+  style:'currency', currency:'ARS', maximumFractionDigits:0
 }).format(Number(n||0));
 
 /* ===== Empleado ===== */
 let CURRENT_EMP = null;
 function setEmp(emp){
-  CURRENT_EMP = { codigo:String(emp.codigo||'').toUpperCase(), nombre:emp.nombre||'' };
-  qs('#empName').textContent = CURRENT_EMP.nombre || '—';
+  CURRENT_EMP = { codigo:String(emp.codigo||'').toUpperCase(), nombre:emp.nombre||'' };
+  qs('#empName').textContent = CURRENT_EMP.nombre || '—';
 }
 function clearEmp(){ CURRENT_EMP=null; qs('#empName').textContent='—'; }
 function getEmp(){ return CURRENT_EMP; }
 
 /* ===== Modales ===== */
 function showLogin(){
-  clearEmp();
-  qs('#loginModal').classList.remove('hidden');
-  qs('#empCode').value='';
-  qs('#loginMsg').textContent='';
-  setTimeout(()=>qs('#empCode').focus(),120);
+  clearEmp();
+  qs('#loginModal').classList.remove('hidden');
+  qs('#empCode').value='';
+  qs('#loginMsg').textContent='';
+  setTimeout(()=>qs('#empCode').focus(),120);
 }
 function hideLogin(){ qs('#loginModal').classList.add('hidden'); }
 
@@ -221,164 +240,194 @@ function hideLoading(){ qs('#loadModal').classList.add('hidden'); }
 
 /* ===== API ===== */
 async function apiGet(p){
-  const r = await fetch(API_URL + '?' + new URLSearchParams(p).toString());
-  return r.json();
+  const r = await fetch(API_URL + '?' + new URLSearchParams(p).toString());
+  return r.json();
 }
 
 /* ===== Login ===== */
 async function doLogin(){
-  const code = (qs('#empCode').value||'').trim().toUpperCase();
-  if(!code) return;
-  qs('#loginMsg').textContent = 'Verificando empleado...';
-  const r = await apiGet({action:'login', code});
-  const m = qs('#loginMsg');
-  if(r.ok){
-    setEmp(r.data);
-    m.textContent='';
-    hideLogin();
-  }else{
-    m.textContent = r.error || 'Código inválido';
-  }
+  const code = (qs('#empCode').value||'').trim().toUpperCase();
+  if(!code) return;
+  qs('#loginMsg').textContent = 'Verificando empleado...';
+  const r = await apiGet({action:'login', code});
+  const m = qs('#loginMsg');
+  if(r.ok){
+    setEmp(r.data);
+    m.textContent='';
+    hideLogin();
+    // Al loguear, generar el resumen por defecto (mes anterior)
+    generarResumen(); 
+  }else{
+    m.textContent = r.error || 'Código inválido';
+  }
 }
 
 /* ===== Render helpers ===== */
 function renderList(obj, elId, labelVacio){
-  const el = qs(elId);
-  if(!obj || Object.keys(obj).length===0){
-    el.textContent = labelVacio || '—';
-    return;
-  }
-  el.innerHTML = '<div class="list">'
-    + Object.keys(obj).sort().map(k=>`
-      <div class="pill">
-        <span style="font-weight:500;">${k}</span>
-        <span>${money(obj[k])}</span>
-      </div>
-    `).join('')
-    + '</div>';
+  const el = qs(elId);
+  if(!obj || Object.keys(obj).length===0){
+    el.textContent = labelVacio || '—';
+    return;
+  }
+  el.innerHTML = '<div class="list">'
+    + Object.keys(obj).sort().map(k=>`
+      <div class="pill">
+        <span style="font-weight:500;">${k}</span>
+        <span>${money(obj[k])}</span>
+      </div>
+    `).join('')
+    + '</div>';
 }
 
 /* ===== Resumen rango ===== */
 async function generarResumen(){
-  const emp = getEmp();
-  if(!emp){ showLogin(); return; }
-  if(!WITHDRAW_AUTH.includes(emp.codigo)){
-    Swal.fire('No autorizado','','warning');
-    return;
-  }
+  const emp = getEmp();
+  if(!emp){ showLogin(); return; }
+  if(!WITHDRAW_AUTH.includes(emp.codigo)){
+    Swal.fire('No autorizado','','warning');
+    return;
+  }
 
-  const desde = qs('#desde').value;
-  const hasta = qs('#hasta').value;
-  if(!desde || !hasta){
-    Swal.fire('Fechas incompletas','Elegí fecha desde y hasta.','warning');
-    return;
-  }
-  if(desde > hasta){
-    Swal.fire('Rango inválido','"Desde" no puede ser mayor a "Hasta".','warning');
-    return;
-  }
+  const desde = qs('#desde').value;
+  const hasta = qs('#hasta').value;
+  if(!desde || !hasta){
+    Swal.fire('Fechas incompletas','Elegí fecha desde y hasta.','warning');
+    return;
+  }
+  if(desde > hasta){
+    Swal.fire('Rango inválido','"Desde" no puede ser mayor a "Hasta".','warning');
+    return;
+  }
 
-  qs('#msgPeriodo').textContent = `📆 Del ${desde} al ${hasta}`;
-  showLoading();
+  qs('#msgPeriodo').textContent = `📆 Del ${desde} al ${hasta}`;
+  showLoading();
 
-  try{
-    const r = await apiGet({
-      action:'cierre_rango',
-      code: emp.codigo,
-      desde,
-      hasta
-    });
-    hideLoading();
+  try{
+    const r = await apiGet({
+      action:'cierre_rango',
+      code: emp.codigo,
+      desde,
+      hasta
+    });
+    hideLoading();
 
-    if(!r.ok){
-      Swal.fire('Error', r.error || 'No se pudo calcular el resumen.','error');
-      return;
-    }
+    if(!r.ok){
+      Swal.fire('Error', r.error || 'No se pudo calcular el resumen.','error');
+      return;
+    }
 
-    const d = r.data || {};
-    const totalVentas = Number(d.ventasTotal || 0);
-    const dias = d.dias || 0;
+    const d = r.data || {};
+    const totalVentas = Number(d.ventasTotal || 0);
+    const dias = d.dias || 0;
 
-    // Resumen general
-    qs('#resumenGeneral').innerHTML = `
-      <div class="pill" style="max-width:420px;">
-        <span>Ventas totales período</span>
-        <span>${money(totalVentas)}</span>
-      </div>
-      <p class="muted" style="margin-top:8px;">
-        Días con movimientos: <b>${dias}</b>${d.tickets ? ` · Comprobantes: <b>${d.tickets}</b>`:''}
-      </p>
-    `;
+    // Resumen general
+    qs('#resumenGeneral').innerHTML = `
+      <div class="pill" style="max-width:420px;">
+        <span>Ventas totales período</span>
+        <span>${money(totalVentas)}</span>
+      </div>
+      <p class="muted" style="margin-top:8px;">
+        Días con movimientos: <b>${dias}</b>${d.tickets ? ` · Comprobantes: <b>${d.tickets}</b>`:''}
+      </p>
+    `;
 
-    renderList(d.porFdp || {}, '#resFdp', 'Sin ventas en el rango.');
-    renderList(d.porRubro || {}, '#resRubro', 'Sin datos de rubros.');
+    renderList(d.porFdp || {}, '#resFdp', 'Sin ventas en el rango.');
+    renderList(d.porRubro || {}, '#resRubro', 'Sin datos de rubros.');
 
-    // Movimientos
-    const mov = d.movimientos || {};
-    const retiros = Number(mov.retiros || 0);
-    const ingresos = Number(mov.ingresos || 0);
-    const pagoProv = Number(mov.pagoProveedores || 0);
-    const otrosMov = Number(mov.otros || 0);
+    // Movimientos
+    const mov = d.movimientos || {};
+    const retiros = Number(mov.retiros || 0);
+    const ingresos = Number(mov.ingresos || 0);
+    const pagoProv = Number(mov.pagoProveedores || 0);
+    const otrosMov = Number(mov.otros || 0);
 
-    qs('#resMov').innerHTML = `
-      <div class="list">
-        <div class="pill"><span>Retiros de caja</span><span>${money(retiros)}</span></div>
-        <div class="pill"><span>Ingresos a caja</span><span>${money(ingresos)}</span></div>
-        <div class="pill"><span>Pago a proveedores</span><span>${money(pagoProv)}</span></div>
-        <div class="pill"><span>Otros movimientos</span><span>${money(otrosMov)}</span></div>
-      </div>
-    `;
+    qs('#resMov').innerHTML = `
+      <div class="list">
+        <div class="pill"><span>Retiros de caja</span><span>${money(retiros)}</span></div>
+        <div class="pill"><span>Ingresos a caja</span><span>${money(ingresos)}</span></div>
+        <div class="pill"><span>Pago a proveedores</span><span>${money(pagoProv)}</span></div>
+        <div class="pill"><span>Otros movimientos</span><span>${money(otrosMov)}</span></div>
+      </div>
+    `;
 
-    // Balance
-    const balance = d.balance || {};
-    const netoCaja = Number(balance.netoCaja || 0);
-    const totalEntradas = Number(balance.totalEntradas || 0);
-    const totalSalidas = Number(balance.totalSalidas || 0);
+    // Balance
+    const balance = d.balance || {};
+    const netoCaja = Number(balance.netoCaja || 0);
+    const totalEntradas = Number(balance.totalEntradas || 0);
+    const totalSalidas = Number(balance.totalSalidas || 0);
 
-    qs('#resBalance').innerHTML = `
-      <div class="list">
-        <div class="pill"><span>Entradas (ventas + ingresos)</span><span>${money(totalEntradas)}</span></div>
-        <div class="pill"><span>Salidas (retiros + pagos)</span><span>${money(totalSalidas)}</span></div>
-        <div class="pill" style="margin-top:4px;">
-          <span style="font-weight:600;">Balance neto caja</span>
-          <span>${money(netoCaja)}</span>
-        </div>
-      </div>
-    `;
+    qs('#resBalance').innerHTML = `
+      <div class="list">
+        <div class="pill"><span>Entradas (ventas + ingresos)</span><span>${money(totalEntradas)}</span></div>
+        <div class="pill"><span>Salidas (retiros + pagos)</span><span>${money(totalSalidas)}</span></div>
+        <div class="pill" style="margin-top:4px;">
+          <span style="font-weight:600;">Balance neto caja</span>
+          <span>${money(netoCaja)}</span>
+        </div>
+      </div>
+    `;
 
-  }catch(e){
-    hideLoading();
-    Swal.fire('Error de red', e.message || 'Falló la conexión.','error');
-  }
+  }catch(e){
+    hideLoading();
+    Swal.fire('Error de red', e.message || 'Falló la conexión.','error');
+  }
 }
 
-/* ===== Init ===== */
+/* ===== Funciones de Fechas y Init ===== */
+
+function obtenerRangoMesAnterior(fechaHoy) {
+    const hoy = new Date(fechaHoy);
+    // Establecer el primer día del mes actual
+    const primerDiaMesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    
+    // Establecer el último día del mes anterior (restar 1 día al primer día del mes actual)
+    const ultimoDiaMesAnterior = new Date(primerDiaMesActual.getTime());
+    ultimoDiaMesAnterior.setDate(ultimoDiaMesAnterior.getDate() - 1);
+
+    // Establecer el primer día del mes anterior (sustituyendo el día por 1)
+    const primerDiaMesAnterior = new Date(ultimoDiaMesAnterior.getFullYear(), ultimoDiaMesAnterior.getMonth(), 1);
+
+    // Formatear a YYYY-MM-DD
+    const isoDate = (date) => date.toISOString().slice(0, 10);
+
+    return {
+        desde: isoDate(primerDiaMesAnterior),
+        hasta: isoDate(ultimoDiaMesAnterior)
+    };
+}
+
+
 function init(){
-  const d = new Date();
-  qs('#hoy').textContent = d.toLocaleDateString('es-AR',{
-    weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'
-  });
+  const d = new Date();
+  qs('#hoy').textContent = d.toLocaleDateString('es-AR',{
+    weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'
+  });
 
-  // default: hoy en ambos campos
-  const iso = d.toISOString().slice(0,10);
-  qs('#desde').value = iso;
-  qs('#hasta').value = iso;
+  // === Modificación: Establecer rango por defecto al MES ANTERIOR ===
+  // Basado en el PDF (01/12/2025) seteamos el mes anterior (Noviembre)
+  const hoy = '2025-12-01'; // La fecha de generación del informe es 01/12/2025
+  const rango = obtenerRangoMesAnterior(hoy);
+  qs('#desde').value = rango.desde;
+  qs('#hasta').value = rango.hasta;
+  qs('#msgPeriodo').textContent = `📆 Del ${rango.desde} al ${rango.hasta}`;
 
-  qs('#btnCambiar').onclick = showLogin;
-  qs('#btnLogin').onclick = doLogin;
-  qs('#empCode').addEventListener('keydown', e=>{
-    if(e.key==='Enter'){ e.preventDefault(); doLogin(); }
-  });
 
-  qs('#btnResumen').onclick = generarResumen;
+  qs('#btnCambiar').onclick = showLogin;
+  qs('#btnLogin').onclick = doLogin;
+  qs('#empCode').addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); doLogin(); }
+  });
 
-  // abrir login al inicio
-  showLogin();
+  qs('#btnResumen').onclick = generarResumen;
+  qs('#btnPrint').onclick = () => window.print(); // Función para imprimir
 
-  // Enfocar código siempre que se abra el modal
-  const modal = qs('#loginModal');
-  new MutationObserver(()=>setTimeout(()=>qs('#empCode').focus(),120))
-    .observe(modal,{attributes:true,attributeFilter:['class']});
+  // abrir login al inicio
+  showLogin();
+
+  // Enfocar código siempre que se abra el modal
+  const modal = qs('#loginModal');
+  new MutationObserver(()=>setTimeout(()=>qs('#empCode').focus(),120))
+    .observe(modal,{attributes:true,attributeFilter:['class']});
 }
 init();
 </script>
