@@ -137,6 +137,7 @@
       <div>
         <label>Desde</label>
         <input type="date" id="desde">
+        
       </div>
       <div>
         <label>Hasta</label>
@@ -403,10 +404,9 @@ function init(){
     weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'
   });
 
-  // === Modificación: Establecer rango por defecto al MES ANTERIOR ===
-  // Basado en el PDF (01/12/2025) seteamos el mes anterior (Noviembre)
-  const hoy = '2025-12-01'; // La fecha de generación del informe es 01/12/2025
-  const rango = obtenerRangoMesAnterior(hoy);
+  // Usamos la fecha del PDF para iniciar el rango del mes anterior (Noviembre)
+  const hoyDeReferencia = '2025-12-01'; 
+  const rango = obtenerRangoMesAnterior(hoyDeReferencia);
   qs('#desde').value = rango.desde;
   qs('#hasta').value = rango.hasta;
   qs('#msgPeriodo').textContent = `📆 Del ${rango.desde} al ${rango.hasta}`;
